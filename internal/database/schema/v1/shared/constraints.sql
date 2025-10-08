@@ -1,0 +1,1 @@
+CREATE RULE no_delete_transactions AS ON DELETE TO transactions DO INSTEAD NOTHING;
