@@ -6,3 +6,6 @@ run:
 
 dev:
 	@air
+
+docs:
+	swag init -g cmd/server/main.go
