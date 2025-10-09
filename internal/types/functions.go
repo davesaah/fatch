@@ -15,6 +15,7 @@ import (
 // 409 Conflict
 // 412 Precondition Failed
 // 500 Internal Server Error
+// 503 Service Unavailable
 
 func OKResponse(message string, data any) *SuccessResponse {
 	return &SuccessResponse{
@@ -78,6 +79,13 @@ func InternalServerErrorResponse() *ErrorResponse {
 	return &ErrorResponse{
 		Message:    "Internal server error",
 		StatusCode: http.StatusInternalServerError,
+	}
+}
+
+func ServiceUnavailableErrorResponse() *ErrorResponse {
+	return &ErrorResponse{
+		Message:    "Service is down",
+		StatusCode: http.StatusServiceUnavailable,
 	}
 }
 

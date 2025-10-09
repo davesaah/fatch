@@ -17,12 +17,12 @@ func SetupV1Routes() *chi.Mux {
 
 	// API ROUTES
 	r.Route("/v1", func(r chi.Router) {
-		// Health check endpoint
-		// r.Get("/health", handlers.HealthCheck)
-
 		// Swagger documentation
 		r.Get("/swagger/*", httpSwagger.WrapHandler)
 		r.Get("/swagger/doc.json", handlers.ServeDocFile)
+
+		// Health check endpoint
+		r.Get("/health", handlers.HealthCheck)
 
 		// USER ROUTES
 		r.Route("/users", func(r chi.Router) {
