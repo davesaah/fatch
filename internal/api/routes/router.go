@@ -15,14 +15,14 @@ func SetupV1Routes() *chi.Mux {
 	// setup middlewares
 	r.Use(middleware.Logger)
 
-	// Swagger documentation
-	r.Get("/swagger/*", httpSwagger.WrapHandler)
-
-	// Health check endpoint
-	// r.Get("/health", handlers.HealthCheck)
-
 	// API ROUTES
-	r.Route("/api/v1", func(r chi.Router) {
+	r.Route("/v1", func(r chi.Router) {
+		// Health check endpoint
+		// r.Get("/health", handlers.HealthCheck)
+
+		// Swagger documentation
+		r.Get("/swagger/*", httpSwagger.WrapHandler)
+
 		// USER ROUTES
 		r.Route("/users", func(r chi.Router) {
 			r.Post("/", handlers.CreateUser)
