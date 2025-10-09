@@ -22,7 +22,7 @@ var userService services.UserService
 // @Failure 412 {object} types.ErrorResponse "Password must be at least 8 characters long"
 // @Failure 409 {object} types.ErrorResponse "Username or email already exists"
 // @Failure 500 {object} types.ErrorResponse "Internal server error"
-// @Router /api/v1/users [post]
+// @Router /users [post]
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
 

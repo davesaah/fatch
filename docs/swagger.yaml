@@ -1,0 +1,68 @@
+basePath: /v1
+definitions:
+  database.CreateUserParams:
+    properties:
+      email:
+        type: string
+      passwd:
+        type: string
+      username:
+        type: string
+    type: object
+  types.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  types.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+host: api.fatch.laelfamily.org:8443
+info:
+  contact: {}
+  description: Track your money; fetch insights on spending; budget effectively.
+  title: Fatch API
+  version: "1.0"
+paths:
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with a username, email, and password.
+      parameters:
+      - description: User registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/database.CreateUserParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/types.SuccessResponse'
+        "400":
+          description: Invalid JSON data or empty fields
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "409":
+          description: Username or email already exists
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "412":
+          description: Password must be at least 8 characters long
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+swagger: "2.0"

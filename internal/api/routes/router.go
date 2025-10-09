@@ -22,6 +22,7 @@ func SetupV1Routes() *chi.Mux {
 
 		// Swagger documentation
 		r.Get("/swagger/*", httpSwagger.WrapHandler)
+		r.Get("/swagger/doc.json", handlers.ServeDocFile)
 
 		// USER ROUTES
 		r.Route("/users", func(r chi.Router) {
