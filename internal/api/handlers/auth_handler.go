@@ -19,41 +19,34 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		types.WriteJSONError(w, &types.ErrorResponse{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Invalid JSON data",
-		})
+		types.BadRequestErrorResponse("Invalid JSON data")
 		return
 	}
 
 	// VALIDATE INPUT
 	// Missing fields validation
 	if params.OldPasswd == "" || params.NewPasswd == "" {
-		types.WriteJSONError(w, &types.ErrorResponse{
-			StatusCode: http.StatusBadRequest,
-			Message:    "No empty fields allowed",
-		})
+		types.BadRequestErrorResponse("No empty fields allowed")
 		return
 	}
 
 	// password length validation
 	if len(params.OldPasswd) < 8 || len(params.NewPasswd) < 8 {
-		types.WriteJSONError(w, &types.ErrorResponse{
-			StatusCode: http.StatusPreconditionFailed,
-			Message:    "Password must be at least 8 characters long",
-		})
+		types.ReturnJSON(w,
+			types.PreconditionFailedErrorResponse("Password must be at least 8 characters long"),
+		)
 		return
 	}
 
 	// call service to change password
 	errResponse := authService.ChangePassword(ctx, params)
 	if errResponse != nil {
-		types.WriteJSONError(w, errResponse)
+		types.ReturnJSON(w, errResponse)
 		return
 	}
 
 	// Send success response
-	types.WriteJSONSuccess(w, "Password changed successfully", nil)
+	types.ReturnJSON(w, types.OKResponse("Password changed successfully", nil))
 }
 
 // VerifyPassword handles verifying a user's password.
@@ -63,27 +56,21 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		types.WriteJSONError(w, &types.ErrorResponse{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Invalid JSON data",
-		})
+		types.BadRequestErrorResponse("Invalid JSON data")
 		return
 	}
 
 	// VALIDATE INPUT
 	// Missing fields validation: Can sign in with email or username
 	if (params.Email == "" && params.Username == "") || params.Passwd == "" {
-		types.WriteJSONError(w, &types.ErrorResponse{
-			StatusCode: http.StatusBadRequest,
-			Message:    "No empty fields allowed",
-		})
+		types.BadRequestErrorResponse("No empty fields allowed")
 		return
 	}
 
 	// call service to create user
 	response, errResponse := authService.VerifyPassword(ctx, params)
 	if errResponse != nil {
-		types.WriteJSONError(w, errResponse)
+		types.ReturnJSON(w, errResponse)
 		return
 	}
 
@@ -92,12 +79,12 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) {
 		UserID: response.UserID,
 	})
 	if errResponse != nil {
-		types.WriteJSONError(w, errResponse)
+		types.ReturnJSON(w, errResponse)
 		return
 	}
 
 	responseMsg := fmt.Sprintf("%s logged in successfully", user.Username)
 
 	// return success response
-	types.WriteJSONSuccess(w, responseMsg, response)
+	types.ReturnJSON(w, types.OKResponse(responseMsg, response))
 }

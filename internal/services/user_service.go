@@ -22,7 +22,7 @@ func (s *UserService) CreateUser(ctx context.Context, params database.CreateUser
 	qb := database.NewQueryBuilder(tx)
 	if err := qb.CreateUser(ctx, params); err != nil {
 		pgErr := err.(*pgconn.PgError)
-		return types.BadRequestErrorResponse(pgErr.Message)
+		return types.ConflictErrorResponse(pgErr.Message)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -43,7 +43,6 @@ func (s *UserService) GetUserById(ctx context.Context, params database.GetUserBy
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.GetUserById(ctx, params)
 	if err != nil {
-		// pgErr := err.(*pgconn.PgError)
 		return nil, types.BadRequestErrorResponse(err.Error())
 	}
 
