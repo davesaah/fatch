@@ -23,41 +23,40 @@ var userService services.UserService
 // @Failure 409 {object} types.ErrorResponse "Username or email already exists"
 // @Failure 500 {object} types.ErrorResponse "Internal server error"
 // @Router /users [post]
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+func CreateUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	var ctx = r.Context()
 
 	// get & validate json data from request body
 	var params database.CreateUserParams
-	err := json.NewDecoder(r.Body).Decode(&params)
-	if err != nil {
-		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
-		return
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		return types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
 	}
 
 	// VALIDATE INPUT
 	// Missing fields validation
 	if params.Email == "" || params.Username == "" || params.Passwd == "" {
-		types.ReturnJSON(w, types.BadRequestErrorResponse("No empty fields allowed"))
-		return
+		return types.ReturnJSON(w, types.BadRequestErrorResponse("No empty fields allowed"))
 	}
 
 	// password length validation
 	if len(params.Passwd) < 8 {
-		types.ReturnJSON(w,
+		return types.ReturnJSON(w,
 			types.PreconditionFailedErrorResponse("Password must be at least 8 characters long"),
 		)
-		return
 	}
 
 	// TODO: Validate email with OTP
 
 	// call service to create user
-	errResponse := userService.CreateUser(ctx, params)
-	if errResponse != nil {
+	errResponse, err := userService.CreateUser(ctx, params)
+	if err != nil {
 		types.ReturnJSON(w, errResponse)
-		return
+		return &types.ErrorDetails{
+			Message: "Unable to create a new user",
+			Trace:   err,
+		}
 	}
 
 	// return success response
-	types.ReturnJSON(w, types.CreatedResponse("User created successfully", nil))
+	return types.ReturnJSON(w, types.CreatedResponse("User created successfully", nil))
 }

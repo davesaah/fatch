@@ -3,7 +3,6 @@ package config
 import (
 	_ "embed"
 	"encoding/json"
-	"errors"
 )
 
 //go:embed database.json
@@ -21,7 +20,7 @@ type DB struct {
 func LoadDBConfig() (*DB, error) {
 	var db DB
 	if err := json.Unmarshal(databaseJSON, &db); err != nil {
-		return nil, errors.New("Unable to load database config")
+		return nil, err
 	}
 
 	return &db, nil

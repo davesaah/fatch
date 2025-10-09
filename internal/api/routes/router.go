@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/davidreturns08/fatch/internal/api/handlers"
+	"github.com/davidreturns08/fatch/internal/api/middleware"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -13,7 +13,7 @@ func SetupV1Routes() *chi.Mux {
 	r := chi.NewRouter()
 
 	// setup middlewares
-	r.Use(middleware.Logger)
+	r.Use(middleware.JSONLogger)
 
 	// API ROUTES
 	r.Route("/v1", func(r chi.Router) {
@@ -22,17 +22,17 @@ func SetupV1Routes() *chi.Mux {
 		r.Get("/swagger/doc.json", handlers.ServeDocFile)
 
 		// Health check endpoint
-		r.Get("/health", handlers.HealthCheck)
+		r.Get("/health", middleware.Handler(handlers.HealthCheck))
 
 		// USER ROUTES
 		r.Route("/users", func(r chi.Router) {
-			r.Post("/", handlers.CreateUser)
-			r.Patch("/passwd", handlers.ChangePassword)
+			r.Post("/", middleware.Handler(handlers.CreateUser))
+			r.Patch("/passwd", middleware.Handler(handlers.ChangePassword))
 		})
 
 		// AUTH ROUTES
 		r.Route("/auth", func(r chi.Router) {
-			r.Post("/verify", handlers.VerifyPassword)
+			r.Post("/verify", middleware.Handler(handlers.VerifyPassword))
 		})
 	})
 

@@ -13,78 +13,84 @@ import (
 var authService services.AuthService
 
 // ChangePassword handles changing a user's password.
-func ChangePassword(w http.ResponseWriter, r *http.Request) {
+func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	var ctx = r.Context()
 	var params database.ChangePasswordParams
 
-	err := json.NewDecoder(r.Body).Decode(&params)
-	if err != nil {
-		types.BadRequestErrorResponse("Invalid JSON data")
-		return
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		return types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
 	}
 
 	// VALIDATE INPUT
 	// Missing fields validation
 	if params.OldPasswd == "" || params.NewPasswd == "" {
-		types.BadRequestErrorResponse("No empty fields allowed")
-		return
+		return types.ReturnJSON(w,
+			types.BadRequestErrorResponse("No empty fields allowed"),
+		)
 	}
 
 	// password length validation
 	if len(params.OldPasswd) < 8 || len(params.NewPasswd) < 8 {
-		types.ReturnJSON(w,
+		return types.ReturnJSON(w,
 			types.PreconditionFailedErrorResponse("Password must be at least 8 characters long"),
 		)
-		return
 	}
 
 	// call service to change password
-	errResponse := authService.ChangePassword(ctx, params)
-	if errResponse != nil {
+	errResponse, err := authService.ChangePassword(ctx, params)
+	if err != nil {
 		types.ReturnJSON(w, errResponse)
-		return
+		return &types.ErrorDetails{
+			Message: "Failed to change password",
+			Trace:   err,
+		}
 	}
 
 	// Send success response
-	types.ReturnJSON(w, types.OKResponse("Password changed successfully", nil))
+	return types.ReturnJSON(w, types.OKResponse("Password changed successfully", nil))
 }
 
 // VerifyPassword handles verifying a user's password.
-func VerifyPassword(w http.ResponseWriter, r *http.Request) {
+func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	var ctx = r.Context()
 	var params database.VerifyPasswordParams
 
-	err := json.NewDecoder(r.Body).Decode(&params)
-	if err != nil {
-		types.BadRequestErrorResponse("Invalid JSON data")
-		return
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		return types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
 	}
 
 	// VALIDATE INPUT
 	// Missing fields validation: Can sign in with email or username
 	if (params.Email == "" && params.Username == "") || params.Passwd == "" {
-		types.BadRequestErrorResponse("No empty fields allowed")
-		return
+		return types.ReturnJSON(w,
+			types.BadRequestErrorResponse("No empty fields allowed"),
+		)
 	}
 
 	// call service to create user
-	response, errResponse := authService.VerifyPassword(ctx, params)
-	if errResponse != nil {
+	response, errResponse, err := authService.VerifyPassword(ctx, params)
+	if err != nil {
 		types.ReturnJSON(w, errResponse)
-		return
+		return &types.ErrorDetails{
+			Message: "Failed to verify password",
+			Trace:   err,
+		}
 	}
 
 	// get user info
-	user, errResponse := userService.GetUserById(ctx, database.GetUserByIdParams{
+	user, errResponse, err := userService.GetUserById(ctx, database.GetUserByIdParams{
 		UserID: response.UserID,
 	})
-	if errResponse != nil {
+	if err != nil {
 		types.ReturnJSON(w, errResponse)
-		return
+		return &types.ErrorDetails{
+			Message: "Failed to get user info",
+			Trace:   err,
+		}
 	}
 
 	responseMsg := fmt.Sprintf("%s logged in successfully", user.Username)
 
 	// return success response
-	types.ReturnJSON(w, types.OKResponse(responseMsg, response))
+	return types.ReturnJSON(w, types.OKResponse(responseMsg, response))
 }

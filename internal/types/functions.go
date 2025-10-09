@@ -90,9 +90,16 @@ func ServiceUnavailableErrorResponse() *ErrorResponse {
 }
 
 // ReturnJSON writes a JSON response with the given status code, error type, and message.
-func ReturnJSON(w http.ResponseWriter, resp Response) {
+func ReturnJSON(w http.ResponseWriter, resp Response) *ErrorDetails {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.GetStatusCode())
 
-	json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		return &ErrorDetails{
+			Message: "Failed to encode response",
+			Trace:   err,
+		}
+	}
+
+	return nil
 }

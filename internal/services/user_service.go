@@ -12,43 +12,43 @@ import (
 type UserService struct{}
 
 // CreateUser creates a new user.
-func (s *UserService) CreateUser(ctx context.Context, params database.CreateUserParams) *types.ErrorResponse {
-	tx, errResponse := initialiseDBTX(ctx)
-	if errResponse != nil {
-		return errResponse
+func (s *UserService) CreateUser(ctx context.Context, params database.CreateUserParams) (*types.ErrorResponse, error) {
+	tx, err := initialiseDBTX(ctx)
+	if err != nil {
+		return types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
 
 	qb := database.NewQueryBuilder(tx)
 	if err := qb.CreateUser(ctx, params); err != nil {
 		pgErr := err.(*pgconn.PgError)
-		return types.ConflictErrorResponse(pgErr.Message)
+		return types.ConflictErrorResponse(pgErr.Message), err
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return types.InternalServerErrorResponse()
+		return types.InternalServerErrorResponse(), err
 	}
 
-	return nil
+	return nil, nil
 }
 
 // GetUserById retrieves a user by ID.
-func (s *UserService) GetUserById(ctx context.Context, params database.GetUserByIdParams) (*database.GetUserByIdRow, *types.ErrorResponse) {
-	tx, errResponse := initialiseDBTX(ctx)
-	if errResponse != nil {
-		return nil, errResponse
+func (s *UserService) GetUserById(ctx context.Context, params database.GetUserByIdParams) (*database.GetUserByIdRow, *types.ErrorResponse, error) {
+	tx, err := initialiseDBTX(ctx)
+	if err != nil {
+		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.GetUserById(ctx, params)
 	if err != nil {
-		return nil, types.BadRequestErrorResponse(err.Error())
+		return nil, types.BadRequestErrorResponse(err.Error()), err
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return nil, types.InternalServerErrorResponse()
+		return nil, types.InternalServerErrorResponse(), err
 	}
 
-	return &row, nil
+	return &row, nil, nil
 }

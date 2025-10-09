@@ -25,3 +25,9 @@ type ErrorResponse struct {
 func (e *ErrorResponse) GetStatusCode() int {
 	return e.StatusCode
 }
+
+// ErrorDetails represents detailed error information.
+type ErrorDetails struct {
+	Message string `json:"msg"`
+	Trace   error  `json:"trace"`
+}

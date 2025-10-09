@@ -8,12 +8,15 @@ import (
 	"github.com/davidreturns08/fatch/internal/types"
 )
 
-func HealthCheck(w http.ResponseWriter, r *http.Request) {
+func HealthCheck(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	// check if loading configurations are successful
 	_, err := config.LoadDBConfig()
 	if err != nil {
 		types.ReturnJSON(w, types.ServiceUnavailableErrorResponse())
-		return
+		return &types.ErrorDetails{
+			Trace:   err,
+			Message: "Failed to load database config",
+		}
 	}
 
 	// check if database connection is established
@@ -21,13 +24,19 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	db, err := database.NewConnection(ctx)
 	if err != nil {
 		types.ReturnJSON(w, types.ServiceUnavailableErrorResponse())
-		return
+		return &types.ErrorDetails{
+			Trace:   err,
+			Message: "Failed to establish database connection",
+		}
 	}
 
 	if err := db.Ping(ctx); err != nil {
 		types.ReturnJSON(w, types.ServiceUnavailableErrorResponse())
-		return
+		return &types.ErrorDetails{
+			Trace:   err,
+			Message: "Failed to ping database",
+		}
 	}
 
-	types.ReturnJSON(w, types.OKResponse("Service is up", nil))
+	return types.ReturnJSON(w, types.OKResponse("Service is up", nil))
 }
