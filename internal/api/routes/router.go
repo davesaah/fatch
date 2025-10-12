@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"os"
 	"time"
 
 	"github.com/davidreturns08/fatch/internal/api/handlers"
@@ -37,12 +38,14 @@ func SetupV1Routes() *chi.Mux {
 
 	// API ROUTES
 	r.Route("/v1", func(r chi.Router) {
-		// profiler
-		r.Mount("/debug", chiMiddleware.Profiler())
+		if os.Getenv("ENVIRONMENT") == "dev" {
+			// profiler
+			r.Mount("/debug", chiMiddleware.Profiler())
 
-		// Swagger documentation
-		r.Get("/swagger/*", httpSwagger.WrapHandler)
-		r.Get("/swagger/doc.json", handlers.ServeDocFile)
+			// Swagger documentation
+			r.Get("/swagger/*", httpSwagger.WrapHandler)
+			r.Get("/swagger/doc.json", handlers.ServeDocFile)
+		}
 
 		// Health check endpoint
 		r.Get("/health", middleware.Handler(handlers.HealthCheck))

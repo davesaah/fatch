@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/davidreturns08/fatch/internal/api/routes"
 )
@@ -16,7 +17,10 @@ func main() {
 	mux := routes.SetupV1Routes()
 
 	log.Println("API server started on http://api.fatch.laelfamily.org:8000/v1")
-	log.Println("API docs available at http://api.fatch.laelfamily.org:8000/v1/swagger/index.html")
+	if os.Getenv("ENVIRONMENT") == "dev" {
+		log.Println("API docs available at http://api.fatch.laelfamily.org:8000/v1/swagger/index.html")
+		log.Println("API profiler available at http://api.fatch.laelfamily.org:8000/v1/debug")
+	}
 
 	err := http.ListenAndServe(":8000", mux)
 	if err != nil {
