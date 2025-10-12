@@ -1,14 +1,5 @@
 basePath: /v1
 definitions:
-  database.ChangePasswordParams:
-    properties:
-      new_passwd:
-        type: string
-      old_passwd:
-        type: string
-      user_id:
-        type: string
-    type: object
   database.CreateUserParams:
     properties:
       email:
@@ -20,11 +11,16 @@ definitions:
     type: object
   database.VerifyPasswordParams:
     properties:
-      email:
-        type: string
       passwd:
         type: string
       username:
+        type: string
+    type: object
+  types.ChangePasswordParams:
+    properties:
+      new_passwd:
+        type: string
+      old_passwd:
         type: string
     type: object
   types.ErrorResponse:
@@ -55,7 +51,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/database.ChangePasswordParams'
+          $ref: '#/definitions/types.ChangePasswordParams'
       produces:
       - application/json
       responses:

@@ -34,7 +34,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/database.ChangePasswordParams"
+                            "$ref": "#/definitions/types.ChangePasswordParams"
                         }
                     }
                 ],
@@ -170,20 +170,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "database.ChangePasswordParams": {
-            "type": "object",
-            "properties": {
-                "new_passwd": {
-                    "type": "string"
-                },
-                "old_passwd": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "database.CreateUserParams": {
             "type": "object",
             "properties": {
@@ -201,13 +187,21 @@ const docTemplate = `{
         "database.VerifyPasswordParams": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "passwd": {
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.ChangePasswordParams": {
+            "type": "object",
+            "properties": {
+                "new_passwd": {
+                    "type": "string"
+                },
+                "old_passwd": {
                     "type": "string"
                 }
             }
