@@ -56,9 +56,13 @@ func SetupV1Routes() *chi.Mux {
 		})
 
 		// AUTH ROUTES
-		r.Route("/auth", func(r chi.Router) {
-			r.Patch("/passwd", middleware.Handler(handlers.ChangePassword))
-			r.Post("/verify", middleware.Handler(handlers.VerifyPassword))
+		r.Post("/auth/verify", middleware.Handler(handlers.VerifyPassword))
+
+		// PROTECTED ROUTES: Requires authentication
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.JWTAuth)
+
+			r.Patch("/auth/passwd", middleware.Handler(handlers.ChangePassword))
 		})
 	})
 

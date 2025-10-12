@@ -25,3 +25,21 @@ func LoadDBConfig() (*DB, error) {
 
 	return &db, nil
 }
+
+//go:embed jwt.json
+var jwtJSON []byte
+
+type JWT struct {
+	Secret string `json:"secret"`
+}
+
+func LoadJWTConfig() ([]byte, error) {
+	var jwt JWT
+	if err := json.Unmarshal(jwtJSON, &jwt); err != nil {
+		return nil, err
+	}
+
+	secret := []byte(jwt.Secret)
+
+	return secret, nil
+}

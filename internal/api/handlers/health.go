@@ -38,5 +38,15 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 		}
 	}
 
+	// check if jwt config is loaded successfully
+	_, err = config.LoadJWTConfig()
+	if err != nil {
+		types.ReturnJSON(w, types.ServiceUnavailableErrorResponse())
+		return &types.ErrorDetails{
+			Trace:   err,
+			Message: "Failed to load jwt config",
+		}
+	}
+
 	return types.ReturnJSON(w, types.OKResponse("Service is up", nil))
 }
