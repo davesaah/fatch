@@ -47,11 +47,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS verify_password (citext, citext, TEXT);
+DROP FUNCTION IF EXISTS verify_password (citext, TEXT);
 
 CREATE OR REPLACE FUNCTION verify_password(
     p_username citext,
-    p_email citext,
     p_passwd TEXT
 ) RETURNS UUID
 AS $$
@@ -62,7 +61,7 @@ DECLARE
 BEGIN
     SELECT passwd, id INTO stored_hash, user_id
     FROM users
-    WHERE username = p_username OR email = p_email
+    WHERE username = p_username
     LIMIT 1;
 
     IF stored_hash IS NULL THEN

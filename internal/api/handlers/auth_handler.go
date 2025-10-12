@@ -16,7 +16,7 @@ var authService services.AuthService
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body database.ChangePasswordParams true "Request body for changing user password"
+// @Param request body types.ChangePasswordParams true "Request body for changing user password"
 // @Success 200 {object} types.SuccessResponse
 // @Failure 400 {object} types.ErrorResponse
 // @Failure 412 {object} types.ErrorResponse
@@ -24,7 +24,7 @@ var authService services.AuthService
 // @Router /auth/passwd [post]
 func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	ctx := r.Context()
-	var params database.ChangePasswordParams
+	var params types.ChangePasswordParams
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		return types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
@@ -82,8 +82,8 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	}
 
 	// VALIDATE INPUT
-	// Missing fields validation: Can sign in with email or username
-	if (params.Email == "" && params.Username == "") || params.Passwd == "" {
+	// Missing fields validation
+	if params.Username == "" || params.Passwd == "" {
 		return types.ReturnJSON(w,
 			types.BadRequestErrorResponse("No empty fields allowed"),
 		)

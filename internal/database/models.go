@@ -19,7 +19,6 @@ type ChangePasswordParams struct {
 // VerifyPasswordParams contains the input parameters for the verifyPassword function.
 type VerifyPasswordParams struct {
 	Username string `json:"username"`
-	Email    string `json:"email"`
 	Passwd   string `json:"passwd"`
 }
 

@@ -18,7 +18,7 @@ func (q *Queries) ChangePassword(ctx context.Context, arg ChangePasswordParams) 
 
 // VerifyPassword verifies a user's password.
 func (q *Queries) VerifyPassword(ctx context.Context, arg VerifyPasswordParams) (VerifyPasswordRow, error) {
-	row := q.db.QueryRow(ctx, verifyPassword, arg.Username, arg.Email, arg.Passwd)
+	row := q.db.QueryRow(ctx, verifyPassword, arg.Username, arg.Passwd)
 	var i VerifyPasswordRow
 	err := row.Scan(&i.UserID)
 	return i, err
