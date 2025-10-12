@@ -66,13 +66,13 @@ BEGIN
     LIMIT 1;
 
     IF stored_hash IS NULL THEN
-        RAISE EXCEPTION 'User not found';
+        RAISE EXCEPTION 'Incorrect credentials';
     ELSE
         is_valid := stored_hash = crypt(p_passwd, stored_hash);
     END IF;
 
     IF NOT is_valid THEN
-        RAISE EXCEPTION 'Your password is incorrect';
+        RAISE EXCEPTION 'Incorrect credentials';
     ELSE
         RETURN user_id;
     END IF;
