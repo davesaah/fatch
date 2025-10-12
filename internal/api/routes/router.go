@@ -36,6 +36,9 @@ func SetupV1Routes() *chi.Mux {
 	// look into expanding the rate limiter function to sensitive endpoints
 	r.Use(httprate.LimitByIP(100, 1*time.Minute))
 
+	// add timeout to request
+	r.Use(chiMiddleware.Timeout(time.Second * 1))
+
 	// API ROUTES
 	r.Route("/v1", func(r chi.Router) {
 		if os.Getenv("ENVIRONMENT") == "dev" {
