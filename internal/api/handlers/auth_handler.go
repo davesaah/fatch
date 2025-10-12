@@ -12,9 +12,18 @@ import (
 
 var authService services.AuthService
 
-// ChangePassword handles changing a user's password.
+// @Summary Change password for a user
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body database.ChangePasswordParams true "Request body for changing user password"
+// @Success 200 {object} types.SuccessResponse
+// @Failure 400 {object} types.ErrorResponse
+// @Failure 412 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
+// @Router /auth/passwd [post]
 func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
-	var ctx = r.Context()
+	ctx := r.Context()
 	var params database.ChangePasswordParams
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
@@ -36,6 +45,11 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 		)
 	}
 
+	// don't allow same passwords
+	if params.OldPasswd == params.NewPasswd {
+		return types.ReturnJSON(w, types.PreconditionFailedErrorResponse("Old and new password fields must be different"))
+	}
+
 	// call service to change password
 	errResponse, err := authService.ChangePassword(ctx, params)
 	if err != nil {
@@ -50,9 +64,17 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	return types.ReturnJSON(w, types.OKResponse("Password changed successfully", nil))
 }
 
-// VerifyPassword handles verifying a user's password.
+// @Summary Verify user login attempt
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body database.VerifyPasswordParams true "Request body for verifying user login attempt"
+// @Success 200 {object} types.SuccessResponse
+// @Failure 400 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
+// @Router /auth/verify [post]
 func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
-	var ctx = r.Context()
+	ctx := r.Context()
 	var params database.VerifyPasswordParams
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {

@@ -15,9 +15,104 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/passwd": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Change password for a user",
+                "parameters": [
+                    {
+                        "description": "Request body for changing user password",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.ChangePasswordParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "412": {
+                        "description": "Precondition Failed",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/verify": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Verify user login attempt",
+                "parameters": [
+                    {
+                        "description": "Request body for verifying user login attempt",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.VerifyPasswordParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "post": {
-                "description": "Registers a new user with a username, email, and password.",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,10 +122,10 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Create a new user",
+                "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "User registration data",
+                        "description": "Request body for registering a new user",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -40,32 +135,32 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "User created successfully",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/types.SuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid JSON data or empty fields",
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "409": {
-                        "description": "Username or email already exists",
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "412": {
-                        "description": "Password must be at least 8 characters long",
+                        "description": "Precondition Failed",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
@@ -75,7 +170,35 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "database.ChangePasswordParams": {
+            "type": "object",
+            "properties": {
+                "new_passwd": {
+                    "type": "string"
+                },
+                "old_passwd": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "database.CreateUserParams": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "passwd": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.VerifyPasswordParams": {
             "type": "object",
             "properties": {
                 "email": {
@@ -112,7 +235,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "api.fatch.laelfamily.org:8443",
+	Host:             "api.fatch.laelfamily.org:8000",
 	BasePath:         "/v1",
 	Schemes:          []string{},
 	Title:            "Fatch API",

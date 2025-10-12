@@ -13,7 +13,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-// setupV1Routes sets up the routes for the v1 API.
+// SetupV1Routes sets up the routes for the v1 API.
 func SetupV1Routes() *chi.Mux {
 	r := chi.NewRouter()
 
@@ -22,12 +22,8 @@ func SetupV1Routes() *chi.Mux {
 
 	// update later
 	r.Use(cors.Handler(cors.Options{
-		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins: []string{"https://*", "http://*"},
-		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
@@ -54,11 +50,11 @@ func SetupV1Routes() *chi.Mux {
 		// USER ROUTES
 		r.Route("/users", func(r chi.Router) {
 			r.Post("/", middleware.Handler(handlers.CreateUser))
-			r.Patch("/passwd", middleware.Handler(handlers.ChangePassword))
 		})
 
 		// AUTH ROUTES
 		r.Route("/auth", func(r chi.Router) {
+			r.Patch("/passwd", middleware.Handler(handlers.ChangePassword))
 			r.Post("/verify", middleware.Handler(handlers.VerifyPassword))
 		})
 	})

@@ -1,6 +1,24 @@
 basePath: /v1
 definitions:
+  database.ChangePasswordParams:
+    properties:
+      new_passwd:
+        type: string
+      old_passwd:
+        type: string
+      user_id:
+        type: string
+    type: object
   database.CreateUserParams:
+    properties:
+      email:
+        type: string
+      passwd:
+        type: string
+      username:
+        type: string
+    type: object
+  database.VerifyPasswordParams:
     properties:
       email:
         type: string
@@ -20,20 +38,81 @@ definitions:
       message:
         type: string
     type: object
-host: api.fatch.laelfamily.org:8443
+host: api.fatch.laelfamily.org:8000
 info:
   contact: {}
   description: Track your money; fetch insights on spending; budget effectively.
   title: Fatch API
   version: "1.0"
 paths:
+  /auth/passwd:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request body for changing user password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/database.ChangePasswordParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "412":
+          description: Precondition Failed
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Change password for a user
+      tags:
+      - auth
+  /auth/verify:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request body for verifying user login attempt
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/database.VerifyPasswordParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Verify user login attempt
+      tags:
+      - auth
   /users:
     post:
       consumes:
       - application/json
-      description: Registers a new user with a username, email, and password.
       parameters:
-      - description: User registration data
+      - description: Request body for registering a new user
         in: body
         name: request
         required: true
@@ -42,27 +121,27 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: User created successfully
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/types.SuccessResponse'
         "400":
-          description: Invalid JSON data or empty fields
+          description: Bad Request
           schema:
             $ref: '#/definitions/types.ErrorResponse'
         "409":
-          description: Username or email already exists
+          description: Conflict
           schema:
             $ref: '#/definitions/types.ErrorResponse'
         "412":
-          description: Password must be at least 8 characters long
+          description: Precondition Failed
           schema:
             $ref: '#/definitions/types.ErrorResponse'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/types.ErrorResponse'
-      summary: Create a new user
+      summary: Register a new user
       tags:
       - users
 swagger: "2.0"

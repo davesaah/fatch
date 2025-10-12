@@ -11,17 +11,16 @@ import (
 
 var userService services.UserService
 
-// @Summary Create a new user
-// @Description Registers a new user with a username, email, and password.
+// @Summary Register a new user
 // @Tags users
 // @Accept  json
 // @Produce  json
-// @Param request body database.CreateUserParams true "User registration data"
-// @Success 200 {object} types.SuccessResponse "User created successfully"
-// @Failure 400 {object} types.ErrorResponse "Invalid JSON data or empty fields"
-// @Failure 412 {object} types.ErrorResponse "Password must be at least 8 characters long"
-// @Failure 409 {object} types.ErrorResponse "Username or email already exists"
-// @Failure 500 {object} types.ErrorResponse "Internal server error"
+// @Param request body database.CreateUserParams true "Request body for registering a new user"
+// @Success 201 {object} types.SuccessResponse
+// @Failure 400 {object} types.ErrorResponse
+// @Failure 412 {object} types.ErrorResponse
+// @Failure 409 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
 // @Router /users [post]
 func CreateUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	var ctx = r.Context()
