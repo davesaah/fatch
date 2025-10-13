@@ -42,32 +42,38 @@ func SetupV1Routes() *chi.Mux {
 	// API ROUTES
 	r.Route("/v1", func(r chi.Router) {
 		if os.Getenv("ENVIRONMENT") == "dev" {
-			// profiler
-			r.Mount("/debug", chiMiddleware.Profiler())
+			r.Mount("/debug", chiMiddleware.Profiler()) // profiler
 
 			// Swagger documentation
 			r.Get("/swagger/*", httpSwagger.WrapHandler)
 			r.Get("/swagger/doc.json", handlers.ServeDocFile)
 		}
 
-		// Health check endpoint
 		r.Get("/health", middleware.Handler(handlers.HealthCheck))
 
-		// USER ROUTES
-		r.Route("/users", func(r chi.Router) {
-			r.Post("/", middleware.Handler(handlers.CreateUser))
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/login", middleware.Handler(handlers.VerifyPassword))
+			r.Post("/register", middleware.Handler(handlers.CreateUser))
+			// r.Post("/verify", middleware.Handler(handlers.VerifyUser))
 		})
-
-		// AUTH ROUTES
-		r.Post("/auth/verify", middleware.Handler(handlers.VerifyPassword))
 
 		// PROTECTED ROUTES: Requires authentication
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.JWTAuth)
 
-			r.Patch("/auth/passwd", middleware.Handler(handlers.ChangePassword))
-			r.Get("/currencies/{id}", middleware.Handler(handlers.GetCurrencyById))
-			r.Get("/currencies", middleware.Handler(handlers.GetAllCurrencies))
+			r.Patch("/users/passwd", middleware.Handler(handlers.ChangePassword))
+
+			r.Route("/currencies", func(r chi.Router) {
+				r.Get("/", middleware.Handler(handlers.GetAllCurrencies))
+				r.Get("/{id}", middleware.Handler(handlers.GetCurrencyById))
+			})
+
+			r.Route("/accounts", func(r chi.Router) {
+				// r.Post("/", middleware.Handler(handlers.CreateAccount))
+				// r.Get("/{id}", middleware.Handler(handlers.GetAccountById))
+				// r.Get("/", middleware.Handler(handlers.GetAllAccounts))
+				// r.Get("/{id}/balance", middleware.Handler(handlers.GetAccountBalance))
+			})
 		})
 	})
 
