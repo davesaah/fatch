@@ -1,3 +1,4 @@
+-- Active: 1758835250687@@127.0.0.1@5432@local@fatch
 DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE users (
@@ -13,3 +14,7 @@ CREATE INDEX idx_users_username ON users (username);
 
 -- index for email fast lookups
 CREATE INDEX idx_users_email ON users (email);
+
+-- add updated_at column
+ALTER TABLE users
+ADD COLUMN updated_at TIMESTAMPTZ NOT NULL DEFAULT now();

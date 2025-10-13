@@ -18,3 +18,17 @@ CREATE TRIGGER trg_hash_password
 BEFORE INSERT OR UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION hash_user_password();
+
+-- Trigger function to update updated_at
+CREATE OR REPLACE FUNCTION update_users_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at := CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_users_update_timestamp
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_users_timestamp();
