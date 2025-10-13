@@ -66,6 +66,8 @@ func SetupV1Routes() *chi.Mux {
 			r.Use(middleware.JWTAuth)
 
 			r.Patch("/auth/passwd", middleware.Handler(handlers.ChangePassword))
+			r.Get("/currencies/{id}", middleware.Handler(handlers.GetCurrencyById))
+			r.Get("/currencies", middleware.Handler(handlers.GetAllCurrencies))
 		})
 	})
 

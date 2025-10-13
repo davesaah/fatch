@@ -32,3 +32,14 @@ type GetUserByIdRow struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 }
+
+type GetCurrencyByIdRow struct {
+	Name   string `json:"name"`
+	Symbol string `json:"symbol"`
+}
+
+type GetAllCurrenciesRow struct {
+	CurrencyID int    `json:"currency_id"`
+	Name       string `json:"name"`
+	Symbol     string `json:"symbol"`
+}
