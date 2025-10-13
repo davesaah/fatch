@@ -27,11 +27,6 @@ type VerifyPasswordRow struct {
 	UserID pgtype.UUID `json:"user_id"`
 }
 
-// GetUserByIdParams contains the input parameters for the getUserById function.
-type GetUserByIdParams struct {
-	UserID pgtype.UUID `json:"user_id"`
-}
-
 // GetUserByIdRow contains the output row for the getUserById function.
 type GetUserByIdRow struct {
 	Username string `json:"username"`

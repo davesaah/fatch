@@ -112,9 +112,7 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	}
 
 	// get user info
-	user, errResponse, err := userService.GetUserById(ctx, database.GetUserByIdParams{
-		UserID: response.UserID,
-	})
+	user, errResponse, err := userService.GetUserById(ctx, response.UserID)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -157,5 +155,5 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	w.Header().Set("Authorization", "Bearer "+tokenString)
 
 	// return success response
-	return types.ReturnJSON(w, types.OKResponse(responseMsg, response))
+	return types.ReturnJSON(w, types.OKResponse(responseMsg, nil))
 }

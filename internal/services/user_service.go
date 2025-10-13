@@ -6,6 +6,7 @@ import (
 	"github.com/davidreturns08/fatch/internal/database"
 	"github.com/davidreturns08/fatch/internal/types"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // UserService provides user-related services.
@@ -33,7 +34,7 @@ func (s *UserService) CreateUser(ctx context.Context, params database.CreateUser
 }
 
 // GetUserById retrieves a user by ID.
-func (s *UserService) GetUserById(ctx context.Context, params database.GetUserByIdParams) (*database.GetUserByIdRow, *types.ErrorResponse, error) {
+func (s *UserService) GetUserById(ctx context.Context, userID pgtype.UUID) (*database.GetUserByIdRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
@@ -41,7 +42,7 @@ func (s *UserService) GetUserById(ctx context.Context, params database.GetUserBy
 	defer tx.Rollback(ctx)
 
 	qb := database.NewQueryBuilder(tx)
-	row, err := qb.GetUserById(ctx, params)
+	row, err := qb.GetUserById(ctx, userID)
 	if err != nil {
 		return nil, types.BadRequestErrorResponse(err.Error()), err
 	}

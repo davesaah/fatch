@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // CreateUser creates a new user in the database.
@@ -25,8 +27,8 @@ func (q *Queries) VerifyPassword(ctx context.Context, arg VerifyPasswordParams) 
 }
 
 // GetUserById retrieves a user by their ID.
-func (q *Queries) GetUserById(ctx context.Context, arg GetUserByIdParams) (GetUserByIdRow, error) {
-	row := q.db.QueryRow(ctx, getUserById, arg.UserID)
+func (q *Queries) GetUserById(ctx context.Context, userID pgtype.UUID) (GetUserByIdRow, error) {
+	row := q.db.QueryRow(ctx, getUserById, userID)
 	var i GetUserByIdRow
 	err := row.Scan(&i.Username, &i.Email)
 	return i, err
