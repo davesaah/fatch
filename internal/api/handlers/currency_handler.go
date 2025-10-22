@@ -11,7 +11,7 @@ import (
 
 var currencyService *services.CurrencyService
 
-func GetCurrencyById(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func GetCurrencyByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -39,7 +39,7 @@ func GetAllCurrencies(w http.ResponseWriter, r *http.Request) *types.ErrorDetail
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
-			Message: "Fetch all currencies",
+			Message: "Unable to get all currencies",
 			Trace:   err,
 		}
 	}

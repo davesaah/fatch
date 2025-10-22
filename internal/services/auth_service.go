@@ -6,13 +6,14 @@ import (
 	"github.com/davidreturns08/fatch/internal/database"
 	"github.com/davidreturns08/fatch/internal/types"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // AuthService provides authentication-related services.
 type AuthService struct{}
 
 // VerifyPassword verifies the password of a user.
-func (s *AuthService) VerifyPassword(ctx context.Context, params database.VerifyPasswordParams) (*database.VerifyPasswordRow, *types.ErrorResponse, error) {
+func (s *AuthService) VerifyPassword(ctx context.Context, params database.VerifyPasswordParams) (*pgtype.UUID, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
@@ -21,7 +22,7 @@ func (s *AuthService) VerifyPassword(ctx context.Context, params database.Verify
 
 	qb := database.NewQueryBuilder(tx)
 
-	row, err := qb.VerifyPassword(ctx, params)
+	userID, err := qb.VerifyPassword(ctx, params)
 	if err != nil {
 		pgErr := err.(*pgconn.PgError)
 		return nil, types.BadRequestErrorResponse(pgErr.Message), err
@@ -31,7 +32,7 @@ func (s *AuthService) VerifyPassword(ctx context.Context, params database.Verify
 		return nil, types.InternalServerErrorResponse(), err
 	}
 
-	return &row, nil, nil
+	return userID, nil, nil
 }
 
 // ChangePassword changes the password of a user.

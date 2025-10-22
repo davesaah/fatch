@@ -29,10 +29,14 @@ var authService services.AuthService
 // @Router /auth/passwd [post]
 func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	ctx := r.Context()
-	var params types.ChangePasswordParams
+	var params database.ChangePasswordParams
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		return types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		return &types.ErrorDetails{
+			Message: "Unable to parse json",
+			Trace:   err,
+		}
 	}
 
 	// VALIDATE INPUT
@@ -57,13 +61,10 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 
 	// extract user id from context
 	userID := ctx.Value("userID").(pgtype.UUID)
+	params.UserID = userID
 
 	// call service to change password
-	errResponse, err := authService.ChangePassword(ctx, database.ChangePasswordParams{
-		UserID:    userID,
-		OldPasswd: params.OldPasswd,
-		NewPasswd: params.NewPasswd,
-	})
+	errResponse, err := authService.ChangePassword(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -90,7 +91,11 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	var params database.VerifyPasswordParams
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		return types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		return &types.ErrorDetails{
+			Message: "Unable to parse json",
+			Trace:   err,
+		}
 	}
 
 	// VALIDATE INPUT
@@ -102,7 +107,7 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	}
 
 	// call service to create user
-	response, errResponse, err := authService.VerifyPassword(ctx, params)
+	userID, errResponse, err := authService.VerifyPassword(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -112,7 +117,7 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	}
 
 	// get user info
-	user, errResponse, err := userService.GetUserById(ctx, response.UserID)
+	user, errResponse, err := userService.GetUserById(ctx, *userID)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -125,7 +130,7 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 
 	expirationTime := time.Now().Add(15 * time.Minute)
 	claims := &types.Claims{
-		UserID: response.UserID,
+		UserID: *userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},

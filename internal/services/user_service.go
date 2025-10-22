@@ -51,5 +51,5 @@ func (s *UserService) GetUserById(ctx context.Context, userID pgtype.UUID) (*dat
 		return nil, types.InternalServerErrorResponse(), err
 	}
 
-	return &row, nil, nil
+	return row, nil, nil
 }

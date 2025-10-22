@@ -24,7 +24,7 @@ func (cs *CurrencyService) GetCurrencyByID(ctx context.Context, id int) (*databa
 		return nil, types.BadRequestErrorResponse(pgErr.Message), err
 	}
 
-	return &row, nil, nil
+	return row, nil, nil
 }
 
 func (cs *CurrencyService) GetAllCurrencies(ctx context.Context) ([]database.GetAllCurrenciesRow, *types.ErrorResponse, error) {

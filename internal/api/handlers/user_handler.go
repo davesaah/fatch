@@ -28,7 +28,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	// get & validate json data from request body
 	var params database.CreateUserParams
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		return types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		return &types.ErrorDetails{
+			Message: "Unable to parse json",
+			Trace:   err,
+		}
 	}
 
 	// VALIDATE INPUT

@@ -2,11 +2,11 @@ package database
 
 import "context"
 
-func (q *Queries) GetCurrencyByID(ctx context.Context, currencyID int) (GetCurrencyByIdRow, error) {
+func (q *Queries) GetCurrencyByID(ctx context.Context, currencyID int) (*GetCurrencyByIdRow, error) {
 	row := q.db.QueryRow(ctx, getCurrencyById, currencyID)
 	var i GetCurrencyByIdRow
 	err := row.Scan(&i.Name, &i.Symbol)
-	return i, err
+	return &i, err
 }
 
 func (q *Queries) GetAllCurrencies(ctx context.Context) ([]GetAllCurrenciesRow, error) {

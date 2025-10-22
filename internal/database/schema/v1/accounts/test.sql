@@ -6,11 +6,11 @@ SELECT get_account_balance (
     );
 
 SELECT create_account (
-        '77b0f090-2d4d-4d20-a034-6b1fce56e503', 'ecobank', 1
+        '77b0f090-2d4d-4d20-a034-6b1fce56e503', 'some', 1
     );
 
 SELECT get_account_details (
-        1, '77b0f090-2d4d-4d20-a034-6b1fce56e503'
+        4, '77b0f090-2d4d-4d20-a034-6b1fce56e503'
     );
 
 SELECT get_all_user_accounts (
