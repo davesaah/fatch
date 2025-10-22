@@ -1,4 +1,6 @@
 -- Active: 1758835250687@@127.0.0.1@5432@local@fatch
+DROP TABLE IF EXISTS accounts CASCADE;
+
 CREATE TABLE accounts (
     id BIGSERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
@@ -7,7 +9,8 @@ CREATE TABLE accounts (
     description TEXT,
     currency_id BIGINT NOT NULL REFERENCES currencies (id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- index for faster loopups

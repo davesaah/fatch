@@ -24,5 +24,9 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT * FROM currencies;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No currencies found';
+    END IF;
 END;
 $$ LANGUAGE plpgsql;

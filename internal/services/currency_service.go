@@ -21,7 +21,7 @@ func (cs *CurrencyService) GetCurrencyByID(ctx context.Context, id int) (*databa
 	row, err := qb.GetCurrencyByID(ctx, id)
 	if err != nil {
 		pgErr := err.(*pgconn.PgError)
-		return nil, types.BadRequestErrorResponse(pgErr.Message), err
+		return nil, types.NotFoundErrorResponse(pgErr.Message), err
 	}
 
 	return row, nil, nil
@@ -38,7 +38,7 @@ func (cs *CurrencyService) GetAllCurrencies(ctx context.Context) ([]database.Get
 	rows, err := qb.GetAllCurrencies(ctx)
 	if err != nil {
 		pgErr := err.(*pgconn.PgError)
-		return nil, types.BadRequestErrorResponse(pgErr.Message), err
+		return nil, types.NotFoundErrorResponse(pgErr.Message), err
 	}
 
 	return rows, nil, nil

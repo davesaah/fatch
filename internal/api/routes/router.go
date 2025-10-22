@@ -65,14 +65,14 @@ func SetupV1Routes() *chi.Mux {
 
 			r.Route("/currencies", func(r chi.Router) {
 				r.Get("/", middleware.Handler(handlers.GetAllCurrencies))
-				r.Get("/{id}", middleware.Handler(handlers.GetCurrencyById))
+				r.Get("/{id}", middleware.Handler(handlers.GetCurrencyByID))
 			})
 
 			r.Route("/accounts", func(r chi.Router) {
-				// r.Post("/", middleware.Handler(handlers.CreateAccount))
-				// r.Get("/{id}", middleware.Handler(handlers.GetAccountById))
-				// r.Get("/", middleware.Handler(handlers.GetAllAccounts))
-				// r.Get("/{id}/balance", middleware.Handler(handlers.GetAccountBalance))
+				r.Post("/", middleware.Handler(handlers.CreateAccount))
+				r.Get("/{id}", middleware.Handler(handlers.GetAccountByID))
+				r.Get("/", middleware.Handler(handlers.GetAllUserAccounts))
+				r.Patch("/{id}", middleware.Handler(handlers.ArchiveAccountByID))
 			})
 		})
 	})

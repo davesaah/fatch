@@ -9,3 +9,9 @@ const getUserById = "SELECT (get_user_by_id($1::uuid)).*"
 // CURRENCIES
 const getCurrencyById = "SELECT (get_currency_info($1::bigint)).*"
 const getAllCurrencies = "SELECT (get_all_currencies()).*"
+
+// ACCOUNTS
+const createAccount = "SELECT (create_account ($1::uuid, $2::varchar, $3::bigint, $4::decimal, $5::text)).*"
+const getAccountDetails = "SELECT (get_account_details($1::bigint, $2::uuid)).*"
+const getAllUserAccounts = "SELECT (get_all_user_accounts($1::uuid)).*"
+const archiveAccountByID = "SELECT archive_account_by_id($1::bigint, $2::uuid)"
