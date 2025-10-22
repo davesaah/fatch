@@ -1,2 +1,3 @@
 internal/config/*.json
 .env*
+tmp/
