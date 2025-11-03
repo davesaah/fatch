@@ -75,6 +75,6 @@ func (q *Queries) GetAllUserAccounts(ctx context.Context, userID pgtype.UUID) ([
 }
 
 func (q *Queries) ArchiveAccountByID(ctx context.Context, arg ArchiveAccountByIDParams) error {
-	_, err := q.db.Exec(ctx, archiveAccountByID, arg.AccountID, arg.UserID)
+	_, err := q.db.Exec(ctx, archiveAccountByID, arg.AccountID, arg.UserID, arg.IsArchive)
 	return err
 }
