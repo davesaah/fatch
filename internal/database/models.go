@@ -71,4 +71,5 @@ type GetAllUserAccountsRow struct {
 
 type ArchiveAccountByIDParams struct {
 	GetAccountDetailsParams
+	IsArchive bool `json:"is_archive"`
 }

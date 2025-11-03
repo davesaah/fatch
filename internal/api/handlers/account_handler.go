@@ -108,6 +108,7 @@ func GetAllUserAccounts(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 
 func ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	idStr := chi.URLParam(r, "id")
+	isArchiveStr := r.URL.Query().Get("archive")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid account id"))
@@ -117,8 +118,18 @@ func ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		}
 	}
 
+	isArchive, err := strconv.ParseBool(isArchiveStr)
+	if err != nil {
+		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid archive value. Must be true/false"))
+		return &types.ErrorDetails{
+			Message: "Unable to convert archive to boolean",
+			Trace:   err,
+		}
+	}
+
 	var params database.ArchiveAccountByIDParams
 	params.AccountID = id
+	params.IsArchive = isArchive
 
 	// extract user id from context
 	ctx := r.Context()
