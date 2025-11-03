@@ -33,8 +33,8 @@ func (s *UserService) CreateUser(ctx context.Context, params database.CreateUser
 	return nil, nil
 }
 
-// GetUserById retrieves a user by ID.
-func (s *UserService) GetUserById(ctx context.Context, userID pgtype.UUID) (*database.GetUserByIdRow, *types.ErrorResponse, error) {
+// GetUserByID retrieves a user by ID.
+func (s *UserService) GetUserByID(ctx context.Context, userID pgtype.UUID) (*database.GetUserByIdRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
@@ -42,7 +42,7 @@ func (s *UserService) GetUserById(ctx context.Context, userID pgtype.UUID) (*dat
 	defer tx.Rollback(ctx)
 
 	qb := database.NewQueryBuilder(tx)
-	row, err := qb.GetUserById(ctx, userID)
+	row, err := qb.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, types.BadRequestErrorResponse(err.Error()), err
 	}

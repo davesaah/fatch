@@ -117,7 +117,7 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	}
 
 	// get user info
-	user, errResponse, err := userService.GetUserById(ctx, *userID)
+	user, errResponse, err := userService.GetUserByID(ctx, *userID)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{

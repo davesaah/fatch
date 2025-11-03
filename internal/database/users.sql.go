@@ -26,9 +26,9 @@ func (q *Queries) VerifyPassword(ctx context.Context, arg VerifyPasswordParams) 
 	return &i, err
 }
 
-// GetUserById retrieves a user by their ID.
-func (q *Queries) GetUserById(ctx context.Context, userID pgtype.UUID) (*GetUserByIdRow, error) {
-	row := q.db.QueryRow(ctx, getUserById, userID)
+// GetUserByID retrieves a user by their ID.
+func (q *Queries) GetUserByID(ctx context.Context, userID pgtype.UUID) (*GetUserByIdRow, error) {
+	row := q.db.QueryRow(ctx, getUserByID, userID)
 	var i GetUserByIdRow
 	err := row.Scan(&i.Username, &i.Email)
 	return &i, err

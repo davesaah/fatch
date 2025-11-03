@@ -3,7 +3,7 @@ package database
 import "context"
 
 func (q *Queries) GetCurrencyByID(ctx context.Context, currencyID int) (*GetCurrencyByIdRow, error) {
-	row := q.db.QueryRow(ctx, getCurrencyById, currencyID)
+	row := q.db.QueryRow(ctx, getCurrencyByID, currencyID)
 	var i GetCurrencyByIdRow
 	err := row.Scan(&i.Name, &i.Symbol)
 	return &i, err
