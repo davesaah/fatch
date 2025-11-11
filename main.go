@@ -4,8 +4,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-
-	"gitlab.com/davesaah/fatch/internal/api/routes"
 )
 
 // @title Fatch API
@@ -14,7 +12,7 @@ import (
 // @host localhost:8000
 // @BasePath /v1
 func main() {
-	mux := routes.SetupV1Routes()
+	mux := setupV1Routes()
 
 	log.Println("API server started on http://localhost:8000/v1")
 	if os.Getenv("ENVIRONMENT") == "dev" {

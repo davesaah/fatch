@@ -1,22 +1,21 @@
-// Package routes defines all the routes for fatch api
-package routes
+package main
 
 import (
 	"os"
 	"time"
 
-	"gitlab.com/davesaah/fatch/internal/api/handlers"
-	"gitlab.com/davesaah/fatch/internal/api/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	"gitlab.com/davesaah/fatch/handlers"
+	"gitlab.com/davesaah/fatch/middleware"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-// SetupV1Routes sets up the routes for the v1 API.
-func SetupV1Routes() *chi.Mux {
+// setupV1Routes sets up the routes for the v1 API.
+func setupV1Routes() *chi.Mux {
 	r := chi.NewRouter()
 
 	// setup middlewares

@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	"gitlab.com/davesaah/fatch/internal/config"
-	"gitlab.com/davesaah/fatch/internal/types"
+	"gitlab.com/davesaah/fatch/config"
+	"gitlab.com/davesaah/fatch/types"
 )
 
 // JWTAuth middleware validates JWT tokens

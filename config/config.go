@@ -1,3 +1,4 @@
+// Package config loads any config data that the api requires
 package config
 
 import (

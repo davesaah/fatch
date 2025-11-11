@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"gitlab.com/davesaah/fatch/internal/types"
+	"gitlab.com/davesaah/fatch/types"
 )
 
 func init() {

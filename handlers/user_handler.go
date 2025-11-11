@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"gitlab.com/davesaah/fatch/internal/database"
-	"gitlab.com/davesaah/fatch/internal/services"
-	"gitlab.com/davesaah/fatch/internal/types"
+	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/services"
+	"gitlab.com/davesaah/fatch/types"
 )
 
 var userService services.UserService
@@ -23,7 +23,7 @@ var userService services.UserService
 // @Failure 500 {object} types.ErrorResponse
 // @Router /users [post]
 func CreateUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
-	var ctx = r.Context()
+	ctx := r.Context()
 
 	// get & validate json data from request body
 	var params database.CreateUserParams

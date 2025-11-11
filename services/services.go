@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"gitlab.com/davesaah/fatch/internal/database"
+	"gitlab.com/davesaah/fatch/database"
 	"github.com/jackc/pgx/v5"
 )
 

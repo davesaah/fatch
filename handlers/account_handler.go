@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"gitlab.com/davesaah/fatch/internal/database"
-	"gitlab.com/davesaah/fatch/internal/services"
-	"gitlab.com/davesaah/fatch/internal/types"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/services"
+	"gitlab.com/davesaah/fatch/types"
 )
 
 var accountService *services.AccountService

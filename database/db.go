@@ -1,12 +1,14 @@
+// Package database defines the database connections and methods to manipulate
+// and retrieve data
 package database
 
 import (
 	"context"
 	"fmt"
 
-	"gitlab.com/davesaah/fatch/internal/config"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"gitlab.com/davesaah/fatch/config"
 )
 
 // NewConnection establishes a new connection to the PostgreSQL database.

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"gitlab.com/davesaah/fatch/internal/services"
-	"gitlab.com/davesaah/fatch/internal/types"
 	"github.com/go-chi/chi/v5"
+	"gitlab.com/davesaah/fatch/services"
+	"gitlab.com/davesaah/fatch/types"
 )
 
 var currencyService *services.CurrencyService
