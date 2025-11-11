@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/davidreturns08/fatch/internal/config"
-	"github.com/davidreturns08/fatch/internal/database"
-	"github.com/davidreturns08/fatch/internal/services"
-	"github.com/davidreturns08/fatch/internal/types"
+	"gitlab.com/davesaah/fatch/internal/config"
+	"gitlab.com/davesaah/fatch/internal/database"
+	"gitlab.com/davesaah/fatch/internal/services"
+	"gitlab.com/davesaah/fatch/internal/types"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/golang-jwt/jwt/v5"

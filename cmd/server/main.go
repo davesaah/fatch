@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/davidreturns08/fatch/internal/api/routes"
+	"gitlab.com/davesaah/fatch/internal/api/routes"
 )
 
 // @title Fatch API

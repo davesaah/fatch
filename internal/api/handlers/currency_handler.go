@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/davidreturns08/fatch/internal/services"
-	"github.com/davidreturns08/fatch/internal/types"
+	"gitlab.com/davesaah/fatch/internal/services"
+	"gitlab.com/davesaah/fatch/internal/types"
 	"github.com/go-chi/chi/v5"
 )
 

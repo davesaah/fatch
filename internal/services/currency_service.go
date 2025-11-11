@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
-	"github.com/davidreturns08/fatch/internal/database"
-	"github.com/davidreturns08/fatch/internal/types"
+	"gitlab.com/davesaah/fatch/internal/database"
+	"gitlab.com/davesaah/fatch/internal/types"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 

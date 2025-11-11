@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/davidreturns08/fatch/internal/config"
+	"gitlab.com/davesaah/fatch/internal/config"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )

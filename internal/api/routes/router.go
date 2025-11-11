@@ -1,11 +1,12 @@
+// Package routes defines all the routes for fatch api
 package routes
 
 import (
 	"os"
 	"time"
 
-	"github.com/davidreturns08/fatch/internal/api/handlers"
-	"github.com/davidreturns08/fatch/internal/api/middleware"
+	"gitlab.com/davesaah/fatch/internal/api/handlers"
+	"gitlab.com/davesaah/fatch/internal/api/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"

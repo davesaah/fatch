@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/davidreturns08/fatch/internal/config"
-	"github.com/davidreturns08/fatch/internal/database"
-	"github.com/davidreturns08/fatch/internal/types"
+	"gitlab.com/davesaah/fatch/internal/config"
+	"gitlab.com/davesaah/fatch/internal/database"
+	"gitlab.com/davesaah/fatch/internal/types"
 )
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {

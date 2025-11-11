@@ -1,3 +1,4 @@
+// Package middleware defines the custom middlewares for fatch api
 package middleware
 
 import (
@@ -6,9 +7,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/davidreturns08/fatch/internal/config"
-	"github.com/davidreturns08/fatch/internal/types"
 	"github.com/golang-jwt/jwt/v5"
+	"gitlab.com/davesaah/fatch/internal/config"
+	"gitlab.com/davesaah/fatch/internal/types"
 )
 
 // JWTAuth middleware validates JWT tokens

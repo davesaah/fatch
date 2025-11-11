@@ -1,4 +1,4 @@
-module github.com/davidreturns08/fatch
+module gitlab.com/davesaah/fatch
 
 go 1.25.1
 

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/davidreturns08/fatch/internal/database"
-	"github.com/davidreturns08/fatch/internal/services"
-	"github.com/davidreturns08/fatch/internal/types"
+	"gitlab.com/davesaah/fatch/internal/database"
+	"gitlab.com/davesaah/fatch/internal/services"
+	"gitlab.com/davesaah/fatch/internal/types"
 )
 
 var userService services.UserService
