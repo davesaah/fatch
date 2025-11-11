@@ -2,9 +2,9 @@ package database
 
 import "context"
 
-func (q *Queries) GetCurrencyByID(ctx context.Context, currencyID int) (*GetCurrencyByIdRow, error) {
+func (q *Queries) GetCurrencyByID(ctx context.Context, currencyID int) (*GetCurrencyByIDRow, error) {
 	row := q.db.QueryRow(ctx, getCurrencyByID, currencyID)
-	var i GetCurrencyByIdRow
+	var i GetCurrencyByIDRow
 	err := row.Scan(&i.Name, &i.Symbol)
 	return &i, err
 }

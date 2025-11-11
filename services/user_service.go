@@ -3,10 +3,10 @@ package services
 import (
 	"context"
 
-	"gitlab.com/davesaah/fatch/database"
-	"gitlab.com/davesaah/fatch/types"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/types"
 )
 
 // UserService provides user-related services.
@@ -34,7 +34,7 @@ func (s *UserService) CreateUser(ctx context.Context, params database.CreateUser
 }
 
 // GetUserByID retrieves a user by ID.
-func (s *UserService) GetUserByID(ctx context.Context, userID pgtype.UUID) (*database.GetUserByIdRow, *types.ErrorResponse, error) {
+func (s *UserService) GetUserByID(ctx context.Context, userID pgtype.UUID) (*database.GetUserByIDRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err

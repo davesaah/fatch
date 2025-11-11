@@ -3,14 +3,14 @@ package services
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gitlab.com/davesaah/fatch/database"
 	"gitlab.com/davesaah/fatch/types"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type CurrencyService struct{}
 
-func (cs *CurrencyService) GetCurrencyByID(ctx context.Context, id int) (*database.GetCurrencyByIdRow, *types.ErrorResponse, error) {
+func (cs *CurrencyService) GetCurrencyByID(ctx context.Context, id int) (*database.GetCurrencyByIDRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err

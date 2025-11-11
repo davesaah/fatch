@@ -4,33 +4,33 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-// CreateUserParams contains the input parameters for the createUser function.
+// USERS
+
 type CreateUserParams struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Passwd   string `json:"passwd"`
 }
 
-// ChangePasswordParams contains the input parameters for the changePassword function.
 type ChangePasswordParams struct {
 	UserID    pgtype.UUID `json:"-"`
 	OldPasswd string      `json:"old_passwd"`
 	NewPasswd string      `json:"new_passwd"`
 }
 
-// VerifyPasswordParams contains the input parameters for the verifyPassword function.
 type VerifyPasswordParams struct {
 	Username string `json:"username"`
 	Passwd   string `json:"passwd"`
 }
 
-// GetUserByIdRow contains the output row for the getUserById function.
-type GetUserByIdRow struct {
+type GetUserByIDRow struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 }
 
-type GetCurrencyByIdRow struct {
+// CURRENCY
+
+type GetCurrencyByIDRow struct {
 	Name   string `json:"name"`
 	Symbol string `json:"symbol"`
 }
@@ -40,6 +40,8 @@ type GetAllCurrenciesRow struct {
 	Name       string `json:"name"`
 	Symbol     string `json:"symbol"`
 }
+
+// ACCOUNTS
 
 type CreateAccountParams struct {
 	UserID      pgtype.UUID `json:"-"`
