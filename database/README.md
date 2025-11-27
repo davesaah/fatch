@@ -7,8 +7,6 @@
   - `sudo systemctl enable postgresql`
   - `sudo postgresql-setup --initdb`.
   - `sudo systemctl start postgresql`
-  - `sudo nano /var/lib/pgsql/data/pg_hba.conf   # RHEL/Fedora`. Change all
-    the options for peer into md5.
 
 ## Order of Loading Schema
 
