@@ -4,8 +4,8 @@ package middleware
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"gitlab.com/davesaah/fatch/config"
@@ -15,19 +15,12 @@ import (
 // JWTAuth middleware validates JWT tokens
 func JWTAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
+		cookie, err := r.Cookie("jwt")
+		if err != nil {
+			http.Error(w, "No unauthorised access", http.StatusUnauthorized)
+			slog.Default().Error(err.Error())
 			return
 		}
-
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			http.Error(w, "Invalid Authorization format", http.StatusUnauthorized)
-			return
-		}
-
-		tokenString := parts[1]
 
 		// get jwtSecret from config
 		jwtSecret, err := config.LoadJWTConfig()
@@ -38,7 +31,7 @@ func JWTAuth(next http.Handler) http.Handler {
 
 		// parse into custom claims
 		claims := &types.Claims{}
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (any, error) {
+		token, err := jwt.ParseWithClaims(cookie.Value, claims, func(t *jwt.Token) (any, error) {
 			return jwtSecret, nil
 		})
 

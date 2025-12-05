@@ -16,6 +16,11 @@ import (
 
 // setupV1Routes sets up the routes for the v1 API.
 func setupV1Routes() *chi.Mux {
+	origins := []string{"http://localhost:8000"}
+	if os.Getenv("ENVIRONMENT") == "dev" {
+		origins = append(origins, []string{"https://restfox.dev", "https://hoppscotch.io"}...)
+	}
+
 	r := chi.NewRouter()
 
 	// setup middlewares
@@ -23,9 +28,10 @@ func setupV1Routes() *chi.Mux {
 
 	// update later
 	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   origins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		AllowCredentials: false,
+		AllowedHeaders:   []string{"Accept", "Content-Type", "X-CSRF-Token"},
+		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 

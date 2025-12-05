@@ -156,8 +156,15 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 		}
 	}
 
-	// Send token in header
-	w.Header().Set("Authorization", "Bearer "+tokenString)
+	// Set token in cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    tokenString,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // true --> for https
+		SameSite: http.SameSiteLaxMode,
+	})
 
 	// return success response
 	return types.ReturnJSON(w, types.OKResponse(responseMsg, nil))
