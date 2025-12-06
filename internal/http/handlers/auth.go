@@ -7,15 +7,12 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/config"
-	"gitlab.com/davesaah/fatch/database"
-	"gitlab.com/davesaah/fatch/services"
+	"gitlab.com/davesaah/fatch/internal/config"
+	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/types"
 
 	"github.com/golang-jwt/jwt/v5"
 )
-
-var authService services.AuthService
 
 // @Summary Change password for a user
 // @Tags auth
@@ -27,7 +24,7 @@ var authService services.AuthService
 // @Failure 412 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/passwd [post]
-func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	ctx := r.Context()
 	var params database.ChangePasswordParams
 
@@ -67,7 +64,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	params.UserID = userID
 
 	// call service to change password
-	errResponse, err := authService.ChangePassword(ctx, params)
+	errResponse, err := h.Service.ChangePassword(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -89,7 +86,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 // @Failure 400 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/login [post]
-func Login(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	ctx := r.Context()
 	var params database.LoginParams
 
@@ -110,7 +107,7 @@ func Login(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	}
 
 	// call service to create user
-	userID, errResponse, err := authService.Login(ctx, params)
+	userID, errResponse, err := h.Service.Login(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -120,7 +117,7 @@ func Login(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	}
 
 	// get user info
-	user, errResponse, err := userService.GetUserByID(ctx, *userID)
+	user, errResponse, err := h.Service.GetUserByID(ctx, *userID)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -131,7 +128,7 @@ func Login(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 
 	responseMsg := fmt.Sprintf("%s logged in successfully", user.Username)
 
-	expirationTime := time.Now().Add(15 * time.Minute)
+	expirationTime := time.Now().Add(1 * time.Minute)
 	claims := &types.Claims{
 		UserID: *userID,
 		RegisteredClaims: jwt.RegisteredClaims{

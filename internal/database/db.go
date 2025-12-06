@@ -10,10 +10,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"gitlab.com/davesaah/fatch/config"
+	"gitlab.com/davesaah/fatch/internal/config"
 )
 
-func NewConnection(ctx context.Context) (*pgxpool.Pool, error) {
+func NewPool(ctx context.Context) (*pgxpool.Pool, error) {
 	config, err := config.LoadDBConfig()
 	if err != nil {
 		return nil, err
@@ -29,12 +29,10 @@ func NewConnection(ctx context.Context) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
-	// Tune pool limits to prevent stress on DB
-	poolConfig.MaxConns = 100
+	// Pool tuning
+	poolConfig.MaxConns = 20
 	poolConfig.MinConns = 5
-
-	// Limit connection lifetime to avoid memory leaks
-	poolConfig.MaxConnLifetime = 1 * time.Hour
+	poolConfig.MaxConnLifetime = time.Hour
 	poolConfig.MaxConnIdleTime = 30 * time.Minute
 
 	return pgxpool.NewWithConfig(ctx, poolConfig)

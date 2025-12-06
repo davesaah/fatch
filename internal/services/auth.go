@@ -5,21 +5,18 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/types"
 )
 
-type AuthService struct{}
-
-func (s *AuthService) Login(
+func (s *Service) Login(
 	ctx context.Context, params database.LoginParams,
 ) (*pgtype.UUID, *types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 
@@ -36,15 +33,14 @@ func (s *AuthService) Login(
 	return userID, nil, nil
 }
 
-func (s *AuthService) ChangePassword(
+func (s *Service) ChangePassword(
 	ctx context.Context, params database.ChangePasswordParams,
 ) (*types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 

@@ -3,7 +3,7 @@ package handlers
 import "net/http"
 
 // ServeDocFile serves swagger documentation file
-func ServeDocFile(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeDocFile(w http.ResponseWriter, r *http.Request) {
 	filePath := "docs/swagger.json"
 
 	// Set headers if you want the browser to download the file

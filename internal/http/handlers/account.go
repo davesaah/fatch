@@ -7,14 +7,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/database"
-	"gitlab.com/davesaah/fatch/services"
+	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/types"
 )
 
-var accountService *services.AccountService
-
-func CreateAccount(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	ctx := r.Context()
 
 	params := database.CreateAccountParams{
@@ -35,7 +32,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 		))
 	}
 
-	_, errResponse, err := currencyService.GetCurrencyByID(ctx, params.CurrencyID)
+	_, errResponse, err := h.Service.GetCurrencyByID(ctx, params.CurrencyID)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -48,7 +45,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	userID := ctx.Value("userID").(pgtype.UUID)
 	params.UserID = userID
 
-	account, errResponse, err := accountService.CreateAccount(ctx, params)
+	account, errResponse, err := h.Service.CreateAccount(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -62,7 +59,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	))
 }
 
-func GetAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func (h *Handler) GetAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -81,7 +78,7 @@ func GetAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	userID := ctx.Value("userID").(pgtype.UUID)
 	params.UserID = userID
 
-	account, errResponse, err := accountService.GetAccountDetails(ctx, params)
+	account, errResponse, err := h.Service.GetAccountDetails(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -95,12 +92,12 @@ func GetAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	))
 }
 
-func GetAllUserAccounts(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func (h *Handler) GetAllUserAccounts(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	// extract user id from context
 	ctx := r.Context()
 	userID := ctx.Value("userID").(pgtype.UUID)
 
-	accounts, errResponse, err := accountService.GetAllUserAccounts(ctx, userID)
+	accounts, errResponse, err := h.Service.GetAllUserAccounts(ctx, userID)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -112,7 +109,7 @@ func GetAllUserAccounts(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 	return types.ReturnJSON(w, types.OKResponse("", accounts))
 }
 
-func ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func (h *Handler) ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	idStr := chi.URLParam(r, "id")
 	isArchiveStr := r.URL.Query().Get("archive")
 	id, err := strconv.Atoi(idStr)
@@ -144,7 +141,7 @@ func ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 	userID := ctx.Value("userID").(pgtype.UUID)
 	params.UserID = userID
 
-	errResponse, err := accountService.ArchiveAccount(ctx, params)
+	errResponse, err := h.Service.ArchiveAccount(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{

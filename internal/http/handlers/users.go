@@ -4,12 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"gitlab.com/davesaah/fatch/database"
-	"gitlab.com/davesaah/fatch/services"
+	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/types"
 )
-
-var userService services.UserService
 
 // @Summary Register a new user
 // @Tags users
@@ -22,7 +19,7 @@ var userService services.UserService
 // @Failure 409 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
 // @Router /users [post]
-func CreateUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	ctx := r.Context()
 
 	// get & validate json data from request body
@@ -51,7 +48,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	// TODO: Validate email with OTP
 
 	// call service to create user
-	errResponse, err := userService.CreateUser(ctx, params)
+	errResponse, err := h.Service.CreateUser(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{

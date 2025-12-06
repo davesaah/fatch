@@ -5,13 +5,10 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"gitlab.com/davesaah/fatch/services"
 	"gitlab.com/davesaah/fatch/types"
 )
 
-var currencyService *services.CurrencyService
-
-func GetCurrencyByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+func (h *Handler) GetCurrencyByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -22,7 +19,7 @@ func GetCurrencyByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails
 		}
 	}
 
-	currency, errResponse, err := currencyService.GetCurrencyByID(r.Context(), id)
+	currency, errResponse, err := h.Service.GetCurrencyByID(r.Context(), id)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
@@ -34,8 +31,8 @@ func GetCurrencyByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails
 	return types.ReturnJSON(w, types.OKResponse("", currency))
 }
 
-func GetAllCurrencies(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
-	currencies, errResponse, err := currencyService.GetAllCurrencies(r.Context())
+func (h *Handler) GetAllCurrencies(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+	currencies, errResponse, err := h.Service.GetAllCurrencies(r.Context())
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{

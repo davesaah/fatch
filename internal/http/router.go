@@ -1,20 +1,21 @@
-package main
+package internalHTTP
 
 import (
+	"net/http"
 	"os"
 	// "time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"gitlab.com/davesaah/fatch/internal/http/handlers"
+
 	// "github.com/go-chi/httprate"
-	"gitlab.com/davesaah/fatch/handlers"
 
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-// setupV1Routes sets up the routes for the v1 API.
-func setupRoutes() *chi.Mux {
+func NewRouter(h *handlers.Handler) http.Handler {
 	origins := []string{"http://localhost:8000"}
 
 	r := chi.NewRouter()
@@ -46,33 +47,33 @@ func setupRoutes() *chi.Mux {
 
 		// Swagger documentation
 		r.Get("/swagger/*", httpSwagger.WrapHandler)
-		r.Get("/swagger/doc.json", handlers.ServeDocFile)
+		r.Get("/swagger/doc.json", h.ServeDocFile)
 	}
 
-	r.Get("/health", MakeHandler(handlers.HealthCheck))
+	r.Get("/health", MakeHandler(h.HealthCheck))
 
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/login", MakeHandler(handlers.Login))
-		r.Post("/register", MakeHandler(handlers.CreateUser))
-		// r.Post("/verify", middleware.Handler(handlers.VerifyUser))
+		r.Post("/login", MakeHandler(h.Login))
+		r.Post("/register", MakeHandler(h.CreateUser))
+		// r.Post("/verify", middleware.Handler(h.VerifyUser))
 	})
 
 	// PROTECTED ROUTES: Requires authentication
 	r.Group(func(r chi.Router) {
 		r.Use(JWTAuthMiddleware)
 
-		r.Patch("/users/passwd", MakeHandler(handlers.ChangePassword))
+		r.Patch("/users/passwd", MakeHandler(h.ChangePassword))
 
 		r.Route("/currencies", func(r chi.Router) {
-			r.Get("/", MakeHandler(handlers.GetAllCurrencies))
-			r.Get("/{id}", MakeHandler(handlers.GetCurrencyByID))
+			r.Get("/", MakeHandler(h.GetAllCurrencies))
+			r.Get("/{id}", MakeHandler(h.GetCurrencyByID))
 		})
 
 		r.Route("/accounts", func(r chi.Router) {
-			r.Post("/", MakeHandler(handlers.CreateAccount))
-			r.Get("/{id}", MakeHandler(handlers.GetAccountByID))
-			r.Get("/", MakeHandler(handlers.GetAllUserAccounts))
-			r.Patch("/{id}", MakeHandler(handlers.ArchiveAccountByID))
+			r.Post("/", MakeHandler(h.CreateAccount))
+			r.Get("/{id}", MakeHandler(h.GetAccountByID))
+			r.Get("/", MakeHandler(h.GetAllUserAccounts))
+			r.Patch("/{id}", MakeHandler(h.ArchiveAccountByID))
 		})
 	})
 

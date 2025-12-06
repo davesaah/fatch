@@ -5,22 +5,19 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/types"
 )
 
-type AccountService struct{}
-
-func (a *AccountService) CreateAccount(
+func (s *Service) CreateAccount(
 	ctx context.Context,
 	params database.CreateAccountParams,
 ) (*database.GetAllUserAccountsRow, *types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.CreateAccount(ctx, params)
@@ -36,15 +33,14 @@ func (a *AccountService) CreateAccount(
 	return row, nil, nil
 }
 
-func (a *AccountService) GetAccountDetails(
+func (s *Service) GetAccountDetails(
 	ctx context.Context, params database.GetAccountDetailsParams,
 ) (*database.GetAccountDetailsRow, *types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.GetAccountDetails(ctx, params)
@@ -60,15 +56,14 @@ func (a *AccountService) GetAccountDetails(
 	return row, nil, nil
 }
 
-func (a *AccountService) GetAllUserAccounts(
+func (s *Service) GetAllUserAccounts(
 	ctx context.Context, userID pgtype.UUID,
 ) ([]database.GetAllUserAccountsRow, *types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	rows, err := qb.GetAllUserAccounts(ctx, userID)
@@ -80,15 +75,14 @@ func (a *AccountService) GetAllUserAccounts(
 	return rows, nil, nil
 }
 
-func (a *AccountService) ArchiveAccount(
+func (s *Service) ArchiveAccount(
 	ctx context.Context, params database.ArchiveAccountByIDParams,
 ) (*types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	err = qb.ArchiveAccountByID(ctx, params)

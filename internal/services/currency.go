@@ -4,21 +4,20 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgconn"
-	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/types"
 )
 
 type CurrencyService struct{}
 
-func (cs *CurrencyService) GetCurrencyByID(
+func (s *Service) GetCurrencyByID(
 	ctx context.Context, id int,
 ) (*database.GetCurrencyByIDRow, *types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.GetCurrencyByID(ctx, id)
@@ -30,15 +29,14 @@ func (cs *CurrencyService) GetCurrencyByID(
 	return row, nil, nil
 }
 
-func (cs *CurrencyService) GetAllCurrencies(
+func (s *Service) GetAllCurrencies(
 	ctx context.Context,
 ) ([]database.GetAllCurrenciesRow, *types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	rows, err := qb.GetAllCurrencies(ctx)

@@ -1,4 +1,4 @@
-package main
+package internalHTTP
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"gitlab.com/davesaah/fatch/config"
+	"gitlab.com/davesaah/fatch/internal/config"
 	"gitlab.com/davesaah/fatch/types"
 )
 

@@ -5,21 +5,18 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/types"
 )
 
-type UserService struct{}
-
-func (s *UserService) CreateUser(
+func (s *Service) CreateUser(
 	ctx context.Context, params database.CreateUserParams,
 ) (*types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	if err := qb.CreateUser(ctx, params); err != nil {
@@ -34,15 +31,14 @@ func (s *UserService) CreateUser(
 	return nil, nil
 }
 
-func (s *UserService) GetUserByID(
+func (s *Service) GetUserByID(
 	ctx context.Context, userID pgtype.UUID,
 ) (*database.GetUserByIDRow, *types.ErrorResponse, error) {
-	tx, conn, err := initialiseDBTX(ctx)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
-	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.GetUserByID(ctx, userID)
