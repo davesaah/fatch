@@ -14,11 +14,12 @@ type UserService struct{}
 func (s *UserService) CreateUser(
 	ctx context.Context, params database.CreateUserParams,
 ) (*types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	if err := qb.CreateUser(ctx, params); err != nil {
@@ -36,11 +37,12 @@ func (s *UserService) CreateUser(
 func (s *UserService) GetUserByID(
 	ctx context.Context, userID pgtype.UUID,
 ) (*database.GetUserByIDRow, *types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.GetUserByID(ctx, userID)

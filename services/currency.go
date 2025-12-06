@@ -13,11 +13,12 @@ type CurrencyService struct{}
 func (cs *CurrencyService) GetCurrencyByID(
 	ctx context.Context, id int,
 ) (*database.GetCurrencyByIDRow, *types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.GetCurrencyByID(ctx, id)
@@ -32,11 +33,12 @@ func (cs *CurrencyService) GetCurrencyByID(
 func (cs *CurrencyService) GetAllCurrencies(
 	ctx context.Context,
 ) ([]database.GetAllCurrenciesRow, *types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	rows, err := qb.GetAllCurrencies(ctx)

@@ -14,11 +14,12 @@ type AuthService struct{}
 func (s *AuthService) Login(
 	ctx context.Context, params database.LoginParams,
 ) (*pgtype.UUID, *types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 
@@ -38,12 +39,12 @@ func (s *AuthService) Login(
 func (s *AuthService) ChangePassword(
 	ctx context.Context, params database.ChangePasswordParams,
 ) (*types.ErrorResponse, error) {
-
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 

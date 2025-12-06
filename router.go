@@ -2,11 +2,11 @@ package main
 
 import (
 	"os"
-	"time"
+	// "time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
-	"github.com/go-chi/httprate"
+	// "github.com/go-chi/httprate"
 	"gitlab.com/davesaah/fatch/handlers"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -35,10 +35,10 @@ func setupRoutes() *chi.Mux {
 
 	// limit to 100 requests per minute for each unique IP
 	// look into expanding the rate limiter function to sensitive endpoints
-	r.Use(httprate.LimitByIP(100, 1*time.Minute))
+	// r.Use(httprate.LimitByIP(100, 1*time.Minute))
 
 	// add timeout to request
-	r.Use(middleware.Timeout(time.Second * 1))
+	// r.Use(middleware.Timeout(time.Second * 1))
 
 	// API ROUTES
 	if os.Getenv("ENVIRONMENT") == "dev" {

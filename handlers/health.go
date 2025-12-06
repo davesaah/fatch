@@ -29,6 +29,7 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 			Message: "Failed to establish database connection",
 		}
 	}
+	defer db.Close()
 
 	if err := db.Ping(ctx); err != nil {
 		types.ReturnJSON(w, types.ServiceUnavailableErrorResponse())

@@ -5,13 +5,15 @@ package database
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"gitlab.com/davesaah/fatch/config"
 )
 
-func NewConnection(ctx context.Context) (*pgx.Conn, error) {
+func NewConnection(ctx context.Context) (*pgxpool.Pool, error) {
 	config, err := config.LoadDBConfig()
 	if err != nil {
 		return nil, err
@@ -21,7 +23,21 @@ func NewConnection(ctx context.Context) (*pgx.Conn, error) {
 		"postgres://%s:%s@%s:%d/%s?search_path=%s",
 		config.User, config.Password, config.Host, config.Port, config.DBName, config.Schema,
 	)
-	return pgx.Connect(ctx, dburl)
+
+	poolConfig, err := pgxpool.ParseConfig(dburl)
+	if err != nil {
+		return nil, err
+	}
+
+	// Tune pool limits to prevent stress on DB
+	poolConfig.MaxConns = 100
+	poolConfig.MinConns = 5
+
+	// Limit connection lifetime to avoid memory leaks
+	poolConfig.MaxConnLifetime = 1 * time.Hour
+	poolConfig.MaxConnIdleTime = 30 * time.Minute
+
+	return pgxpool.NewWithConfig(ctx, poolConfig)
 }
 
 // DBTX is an interface that abstracts both *pgx.Conn and pgx.Tx for executing queries.

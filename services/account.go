@@ -15,11 +15,12 @@ func (a *AccountService) CreateAccount(
 	ctx context.Context,
 	params database.CreateAccountParams,
 ) (*database.GetAllUserAccountsRow, *types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.CreateAccount(ctx, params)
@@ -38,11 +39,12 @@ func (a *AccountService) CreateAccount(
 func (a *AccountService) GetAccountDetails(
 	ctx context.Context, params database.GetAccountDetailsParams,
 ) (*database.GetAccountDetailsRow, *types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	row, err := qb.GetAccountDetails(ctx, params)
@@ -61,11 +63,12 @@ func (a *AccountService) GetAccountDetails(
 func (a *AccountService) GetAllUserAccounts(
 	ctx context.Context, userID pgtype.UUID,
 ) ([]database.GetAllUserAccountsRow, *types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	rows, err := qb.GetAllUserAccounts(ctx, userID)
@@ -80,11 +83,12 @@ func (a *AccountService) GetAllUserAccounts(
 func (a *AccountService) ArchiveAccount(
 	ctx context.Context, params database.ArchiveAccountByIDParams,
 ) (*types.ErrorResponse, error) {
-	tx, err := initialiseDBTX(ctx)
+	tx, conn, err := initialiseDBTX(ctx)
 	if err != nil {
 		return types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
+	defer conn.Close()
 
 	qb := database.NewQueryBuilder(tx)
 	err = qb.ArchiveAccountByID(ctx, params)
