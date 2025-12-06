@@ -10,7 +10,9 @@ import (
 
 type CurrencyService struct{}
 
-func (cs *CurrencyService) GetCurrencyByID(ctx context.Context, id int) (*database.GetCurrencyByIDRow, *types.ErrorResponse, error) {
+func (cs *CurrencyService) GetCurrencyByID(
+	ctx context.Context, id int,
+) (*database.GetCurrencyByIDRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
@@ -27,7 +29,9 @@ func (cs *CurrencyService) GetCurrencyByID(ctx context.Context, id int) (*databa
 	return row, nil, nil
 }
 
-func (cs *CurrencyService) GetAllCurrencies(ctx context.Context) ([]database.GetAllCurrenciesRow, *types.ErrorResponse, error) {
+func (cs *CurrencyService) GetAllCurrencies(
+	ctx context.Context,
+) ([]database.GetAllCurrenciesRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err

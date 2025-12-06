@@ -50,13 +50,16 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	// password length validation
 	if len(params.OldPasswd) < 8 || len(params.NewPasswd) < 8 {
 		return types.ReturnJSON(w,
-			types.PreconditionFailedErrorResponse("Password must be at least 8 characters long"),
-		)
+			types.PreconditionFailedErrorResponse(
+				"Password must be at least 8 characters long",
+			))
 	}
 
 	// don't allow same passwords
 	if params.OldPasswd == params.NewPasswd {
-		return types.ReturnJSON(w, types.PreconditionFailedErrorResponse("Old and new password fields must be different"))
+		return types.ReturnJSON(w, types.PreconditionFailedErrorResponse(
+			"Old and new password fields must be different",
+		))
 	}
 
 	// extract user id from context
@@ -81,14 +84,14 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body database.VerifyPasswordParams true "Request body for verifying user login attempt"
+// @Param request body database.LoginParams true "Request body for verifying user login attempt"
 // @Success 200 {object} types.SuccessResponse
 // @Failure 400 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
-// @Router /auth/verify [post]
-func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+// @Router /auth/login [post]
+func Login(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	ctx := r.Context()
-	var params database.VerifyPasswordParams
+	var params database.LoginParams
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
@@ -107,7 +110,7 @@ func VerifyPassword(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 	}
 
 	// call service to create user
-	userID, errResponse, err := authService.VerifyPassword(ctx, params)
+	userID, errResponse, err := authService.Login(ctx, params)
 	if err != nil {
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{

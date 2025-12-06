@@ -3,17 +3,17 @@ package services
 import (
 	"context"
 
-	"gitlab.com/davesaah/fatch/database"
-	"gitlab.com/davesaah/fatch/types"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/types"
 )
 
-// AuthService provides authentication-related services.
 type AuthService struct{}
 
-// VerifyPassword verifies the password of a user.
-func (s *AuthService) VerifyPassword(ctx context.Context, params database.VerifyPasswordParams) (*pgtype.UUID, *types.ErrorResponse, error) {
+func (s *AuthService) Login(
+	ctx context.Context, params database.LoginParams,
+) (*pgtype.UUID, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
@@ -35,8 +35,9 @@ func (s *AuthService) VerifyPassword(ctx context.Context, params database.Verify
 	return userID, nil, nil
 }
 
-// ChangePassword changes the password of a user.
-func (s *AuthService) ChangePassword(ctx context.Context, params database.ChangePasswordParams) (*types.ErrorResponse, error) {
+func (s *AuthService) ChangePassword(
+	ctx context.Context, params database.ChangePasswordParams,
+) (*types.ErrorResponse, error) {
 
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {

@@ -11,7 +11,6 @@ import (
 	"gitlab.com/davesaah/fatch/config"
 )
 
-// NewConnection establishes a new connection to the PostgreSQL database.
 func NewConnection(ctx context.Context) (*pgx.Conn, error) {
 	config, err := config.LoadDBConfig()
 	if err != nil {
@@ -37,7 +36,7 @@ type Queries struct {
 	db DBTX
 }
 
-// NewQueryBuilder creates a new Queries instance with the given DBTX (either a connection or a transaction).
+// NewQueryBuilder creates a new Queries instance with the given DBTX (database transaction)
 func NewQueryBuilder(db DBTX) *Queries {
 	return &Queries{db: db}
 }

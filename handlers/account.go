@@ -30,7 +30,9 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	}
 
 	if params.AccountName == "" {
-		return types.ReturnJSON(w, types.BadRequestErrorResponse("Account name cannot be empty"))
+		return types.ReturnJSON(w, types.BadRequestErrorResponse(
+			"Account name cannot be empty",
+		))
 	}
 
 	_, errResponse, err := currencyService.GetCurrencyByID(ctx, params.CurrencyID)
@@ -55,7 +57,9 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 		}
 	}
 
-	return types.ReturnJSON(w, types.CreatedResponse("Account created successfully", account))
+	return types.ReturnJSON(w, types.CreatedResponse(
+		"Account created successfully", account,
+	))
 }
 
 func GetAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
@@ -86,7 +90,9 @@ func GetAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails 
 		}
 	}
 
-	return types.ReturnJSON(w, types.OKResponse("Account retrieved successfully", account))
+	return types.ReturnJSON(w, types.OKResponse(
+		"Account retrieved successfully", account,
+	))
 }
 
 func GetAllUserAccounts(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
@@ -120,7 +126,9 @@ func ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 
 	isArchive, err := strconv.ParseBool(isArchiveStr)
 	if err != nil {
-		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid archive value. Must be true/false"))
+		types.ReturnJSON(w, types.BadRequestErrorResponse(
+			"Invalid archive value. Must be true/false",
+		))
 		return &types.ErrorDetails{
 			Message: "Unable to convert archive to boolean",
 			Trace:   err,

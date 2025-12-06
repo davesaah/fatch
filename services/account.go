@@ -3,15 +3,18 @@ package services
 import (
 	"context"
 
-	"gitlab.com/davesaah/fatch/database"
-	"gitlab.com/davesaah/fatch/types"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"gitlab.com/davesaah/fatch/database"
+	"gitlab.com/davesaah/fatch/types"
 )
 
 type AccountService struct{}
 
-func (a *AccountService) CreateAccount(ctx context.Context, params database.CreateAccountParams) (*database.GetAllUserAccountsRow, *types.ErrorResponse, error) {
+func (a *AccountService) CreateAccount(
+	ctx context.Context,
+	params database.CreateAccountParams,
+) (*database.GetAllUserAccountsRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
@@ -32,7 +35,9 @@ func (a *AccountService) CreateAccount(ctx context.Context, params database.Crea
 	return row, nil, nil
 }
 
-func (a *AccountService) GetAccountDetails(ctx context.Context, params database.GetAccountDetailsParams) (*database.GetAccountDetailsRow, *types.ErrorResponse, error) {
+func (a *AccountService) GetAccountDetails(
+	ctx context.Context, params database.GetAccountDetailsParams,
+) (*database.GetAccountDetailsRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
@@ -53,7 +58,9 @@ func (a *AccountService) GetAccountDetails(ctx context.Context, params database.
 	return row, nil, nil
 }
 
-func (a *AccountService) GetAllUserAccounts(ctx context.Context, userID pgtype.UUID) ([]database.GetAllUserAccountsRow, *types.ErrorResponse, error) {
+func (a *AccountService) GetAllUserAccounts(
+	ctx context.Context, userID pgtype.UUID,
+) ([]database.GetAllUserAccountsRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err
@@ -70,7 +77,9 @@ func (a *AccountService) GetAllUserAccounts(ctx context.Context, userID pgtype.U
 	return rows, nil, nil
 }
 
-func (a *AccountService) ArchiveAccount(ctx context.Context, params database.ArchiveAccountByIDParams) (*types.ErrorResponse, error) {
+func (a *AccountService) ArchiveAccount(
+	ctx context.Context, params database.ArchiveAccountByIDParams,
+) (*types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return types.InternalServerErrorResponse(), err

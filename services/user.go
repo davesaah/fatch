@@ -9,11 +9,11 @@ import (
 	"gitlab.com/davesaah/fatch/types"
 )
 
-// UserService provides user-related services.
 type UserService struct{}
 
-// CreateUser creates a new user.
-func (s *UserService) CreateUser(ctx context.Context, params database.CreateUserParams) (*types.ErrorResponse, error) {
+func (s *UserService) CreateUser(
+	ctx context.Context, params database.CreateUserParams,
+) (*types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return types.InternalServerErrorResponse(), err
@@ -33,8 +33,9 @@ func (s *UserService) CreateUser(ctx context.Context, params database.CreateUser
 	return nil, nil
 }
 
-// GetUserByID retrieves a user by ID.
-func (s *UserService) GetUserByID(ctx context.Context, userID pgtype.UUID) (*database.GetUserByIDRow, *types.ErrorResponse, error) {
+func (s *UserService) GetUserByID(
+	ctx context.Context, userID pgtype.UUID,
+) (*database.GetUserByIDRow, *types.ErrorResponse, error) {
 	tx, err := initialiseDBTX(ctx)
 	if err != nil {
 		return nil, types.InternalServerErrorResponse(), err

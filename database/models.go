@@ -18,7 +18,7 @@ type ChangePasswordParams struct {
 	NewPasswd string      `json:"new_passwd"`
 }
 
-type VerifyPasswordParams struct {
+type LoginParams struct {
 	Username string `json:"username"`
 	Passwd   string `json:"passwd"`
 }
@@ -36,9 +36,8 @@ type GetCurrencyByIDRow struct {
 }
 
 type GetAllCurrenciesRow struct {
-	CurrencyID int    `json:"currency_id"`
-	Name       string `json:"name"`
-	Symbol     string `json:"symbol"`
+	CurrencyID int `json:"currency_id"`
+	GetCurrencyByIDRow
 }
 
 // ACCOUNTS

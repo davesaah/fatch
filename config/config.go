@@ -7,7 +7,7 @@ import (
 )
 
 //go:embed database.json
-var databaseJSON []byte
+var DBConfig []byte
 
 type DB struct {
 	Host     string `json:"host"`
@@ -20,7 +20,7 @@ type DB struct {
 
 func LoadDBConfig() (*DB, error) {
 	var db DB
-	if err := json.Unmarshal(databaseJSON, &db); err != nil {
+	if err := json.Unmarshal(DBConfig, &db); err != nil {
 		return nil, err
 	}
 
@@ -28,7 +28,7 @@ func LoadDBConfig() (*DB, error) {
 }
 
 //go:embed jwt.json
-var jwtJSON []byte
+var JWTConfig []byte
 
 type JWT struct {
 	Secret string `json:"secret"`
@@ -36,7 +36,7 @@ type JWT struct {
 
 func LoadJWTConfig() ([]byte, error) {
 	var jwt JWT
-	if err := json.Unmarshal(jwtJSON, &jwt); err != nil {
+	if err := json.Unmarshal(JWTConfig, &jwt); err != nil {
 		return nil, err
 	}
 
