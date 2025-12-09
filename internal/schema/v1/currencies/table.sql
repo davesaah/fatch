@@ -1,4 +1,4 @@
--- Active: 1758835250687@@127.0.0.1@5432@local@fatch
+DROP TABLE IF EXISTS currencies CASCADE;
 CREATE TABLE currencies (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE, -- e.g. "US Dollar"

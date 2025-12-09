@@ -1,4 +1,4 @@
--- Active: 1758835250687@@127.0.0.1@5432@local@fatch
+DROP FUNCTION IF EXISTS get_currency_info;
 CREATE OR REPLACE FUNCTION get_currency_info(
     p_currency_id BIGINT
 )
@@ -18,6 +18,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS get_all_currencies;
 CREATE OR REPLACE FUNCTION get_all_currencies()
 RETURNS SETOF currencies
 AS $$

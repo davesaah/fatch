@@ -1,7 +1,4 @@
--- Active: 1758835250687@@127.0.0.1@5432@local@fatch
-
 DROP FUNCTION IF EXISTS create_user (citext, citext, TEXT);
-
 CREATE OR REPLACE FUNCTION create_user(
     p_username citext,
     p_email citext,
@@ -18,7 +15,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP FUNCTION IF EXISTS change_password (UUID, TEXT, TEXT);
-
 CREATE
 OR REPLACE FUNCTION change_password (
     p_user_id UUID,
@@ -48,7 +44,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP FUNCTION IF EXISTS verify_password (citext, TEXT);
-
 CREATE OR REPLACE FUNCTION verify_password(
     p_username citext,
     p_passwd TEXT
@@ -79,7 +74,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP FUNCTION IF EXISTS get_user_by_id (uuid);
-
 CREATE OR REPLACE FUNCTION get_user_by_id(p_uuid uuid)
 RETURNS TABLE(
     username citext,
