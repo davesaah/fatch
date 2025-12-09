@@ -1,22 +1,22 @@
 -- v1 of DB Schema for fatch
 
-CREATE SCHEMA IF NOT EXISTS fatch;
+DROP SCHEMA IF EXISTS fatch CASCADE;
+CREATE SCHEMA fatch;
 SET search_path TO fatch;
 
 -- For gen_random_uuid()
 -- Password hashing.
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+DROP EXTENSION IF EXISTS pgcrypto;
+CREATE EXTENSION pgcrypto;
 
 -- For case-insensitive uniqueness.
-CREATE EXTENSION IF NOT EXISTS citext;
+DROP EXTENSION IF EXISTS citext;
+CREATE EXTENSION citext;
 
 ----------------------------------------------------------------
 -- USERS 
 ----------------------------------------------------------------
 DROP TABLE IF EXISTS users CASCADE;
-DROP INDEX IF EXISTS idx_users_username;
-DROP INDEX IF EXISTS idx_users_email;
-
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     username citext NOT NULL UNIQUE,
@@ -27,9 +27,11 @@ CREATE TABLE users (
 );
 
 -- index for username fast lookups
+DROP INDEX IF EXISTS idx_users_username;
 CREATE INDEX idx_users_username ON users (username);
 
 -- index for email fast lookups
+DROP INDEX IF EXISTS idx_users_email;
 CREATE INDEX idx_users_email ON users (email);
 
 DROP FUNCTION IF EXISTS create_user (citext, citext, TEXT);
@@ -166,14 +168,6 @@ CREATE TABLE currencies (
     symbol VARCHAR(5) NOT NULL UNIQUE -- e.g. "USD", "GHS"
 );
 
--- seed 4 currencies: GHS, USD, EUR, GBP
-INSERT INTO
-    currencies (name, symbol)
-VALUES ('Ghana Cedis', 'GHS'),
-    ('US Dollar', 'USD'),
-    ('Euro', 'EUR'),
-    ('Pounds', 'GBP');
-
 DROP FUNCTION IF EXISTS get_currency_info;
 CREATE OR REPLACE FUNCTION get_currency_info(
     p_currency_id BIGINT
@@ -211,3 +205,115 @@ $$ LANGUAGE plpgsql;
 ----------------------------------------------------------------
 -- CATEGORIES
 ----------------------------------------------------------------
+DROP TYPE IF EXISTS category_type;
+CREATE TYPE category_type AS ENUM ('expense', 'income');
+
+DROP TABLE IF EXISTS categories;
+CREATE TABLE categories (
+    id BIGSERIAL PRIMARY KEY,
+    user_id uuid DEFAULT NULL REFERENCES users (id) ON DELETE CASCADE,
+    type category_type NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+DROP TABLE IF EXISTS subcategories;
+CREATE TABLE subcategories (
+    id BIGSERIAL PRIMARY KEY,
+    category_id BIGINT NOT NULL REFERENCES categories (id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
+    UNIQUE (category_id, name) -- ensures name is unique only within its category
+);
+
+DROP INDEX IF EXISTS idx_categories_user_id;
+CREATE INDEX idx_categories_user_id ON categories (user_id);
+
+DROP INDEX IF EXISTS idx_subcategories_category_id;
+CREATE INDEX idx_subcategories_category_id ON subcategories (category_id);
+
+DROP FUNCTION IF EXISTS add_category;
+CREATE OR REPLACE FUNCTION add_category(
+    p_type VARCHAR,
+    p_name VARCHAR,
+    p_user_id UUID = NULL
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	-- Validate category type
+    BEGIN
+        PERFORM p_type::category_type;  -- Try to cast to ENUM
+    EXCEPTION
+        WHEN others THEN
+            RAISE EXCEPTION 'Category type "%" does not exist', p_type;
+    END;
+
+	BEGIN
+    	INSERT INTO categories(type, name, user_id)
+    	VALUES (p_type::category_type, p_name, p_user_id);
+
+	EXCEPTION
+    	WHEN unique_violation THEN
+        	RAISE EXCEPTION 'Category name "%" already exists', p_name;
+	END;
+END;
+$$;
+
+DROP FUNCTION IF EXISTS add_subcategory;
+CREATE OR REPLACE FUNCTION add_subcategory(
+    p_category_id BIGINT,
+    p_name VARCHAR
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	IF NOT EXISTS (
+        SELECT 1 FROM categories WHERE id = p_category_id
+    ) THEN
+        RAISE EXCEPTION 'Category with ID % does not exist', p_category_id;
+    END IF;
+
+    INSERT INTO subcategories(category_id, name)
+    VALUES (p_category_id, p_name);
+EXCEPTION
+    WHEN unique_violation THEN
+        RAISE EXCEPTION 'Subcategory name "%" already exists in this category', p_name;
+END;
+$$;
+
+DROP FUNCTION IF EXISTS get_categories;
+CREATE OR REPLACE FUNCTION get_categories()
+RETURNS TABLE (
+    category_id BIGINT,
+    category_name VARCHAR,
+    category_type category_type
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT c.id, c.name, c.type
+    FROM categories c
+    ORDER BY c.type, c.name;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP FUNCTION IF EXISTS get_subcategories;
+CREATE OR REPLACE FUNCTION get_subcategories(
+    p_category_id BIGINT
+)
+RETURNS TABLE (
+    subcategory_id BIGINT,
+    subcategory_name VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name
+    FROM subcategories
+    WHERE category_id = p_category_id
+    ORDER BY name;
+
+    IF NOT FOUND THEN
+        RAISE NOTICE 'No subcategories found for category ID %', p_category_id;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;

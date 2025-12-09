@@ -1,4 +1,18 @@
+SET search_path TO fatch;
+
+----------------------------------------------------------------
+-- 4 currencies: GHS, USD, EUR, GBP
+----------------------------------------------------------------
+INSERT INTO
+    currencies (name, symbol)
+VALUES ('Ghana Cedis', 'GHS'),
+    ('US Dollar', 'USD'),
+    ('Euro', 'EUR'),
+    ('Pounds', 'GBP');
+
+----------------------------------------------------------------
 -- CATEGORIES
+----------------------------------------------------------------
 select add_category('income', 'Gifts');
 select add_category('income', 'Salary');
 select add_category('income', 'Commission');
@@ -16,25 +30,7 @@ select add_category('expense', 'God''s Projects');
 select add_category('expense', 'Processing Error');
 select add_category('expense', 'Stocks');
 
+----------------------------------------------------------------
 -- SUBCATEGORIES
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
-select add_subcategory(1, '');
+----------------------------------------------------------------
+-- select add_subcategory(1, '');
