@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/internal/config"
 	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/types"
 
@@ -136,13 +136,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		},
 	}
 
-	// get jwtSecret from config
-	jwtSecret, err := config.LoadJWTConfig()
-	if err != nil {
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
 		types.ReturnJSON(w, types.InternalServerErrorResponse())
 		return &types.ErrorDetails{
-			Message: "Failed to load jwt config",
-			Trace:   err,
+			Message: "JWT secret key not set",
+			Trace:   nil,
 		}
 	}
 

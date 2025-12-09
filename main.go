@@ -5,9 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	"gitlab.com/davesaah/fatch/internal/database"
 	internalHTTP "gitlab.com/davesaah/fatch/internal/http"
@@ -43,20 +40,7 @@ func main() {
 		Handler: router,
 	}
 
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("Server error:", err)
 	}
-
-	// Graceful shutdown
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-
-	<-stop
-	log.Println("Shutting down server...")
-
-	ctxShutdown, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	server.Shutdown(ctxShutdown)
-	log.Println("Server stopped gracefully")
 }

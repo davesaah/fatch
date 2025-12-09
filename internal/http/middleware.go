@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"gitlab.com/davesaah/fatch/internal/config"
 	"gitlab.com/davesaah/fatch/types"
 )
 
@@ -47,11 +46,10 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// get jwtSecret from config
-		jwtSecret, err := config.LoadJWTConfig()
-		if err != nil {
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			log.Panic(err)
+			log.Panic("JWT secret key not set")
 		}
 
 		// parse into custom claims
