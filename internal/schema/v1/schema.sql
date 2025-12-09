@@ -1,22 +1,18 @@
 -- v1 of DB Schema for fatch
-
 DROP SCHEMA IF EXISTS fatch CASCADE;
 CREATE SCHEMA fatch;
 SET search_path TO fatch;
 
 -- For gen_random_uuid()
 -- Password hashing.
-DROP EXTENSION IF EXISTS pgcrypto;
 CREATE EXTENSION pgcrypto;
 
 -- For case-insensitive uniqueness.
-DROP EXTENSION IF EXISTS citext;
 CREATE EXTENSION citext;
 
 ----------------------------------------------------------------
 -- USERS 
 ----------------------------------------------------------------
-DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     username citext NOT NULL UNIQUE,
@@ -26,15 +22,9 @@ CREATE TABLE users (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- index for username fast lookups
-DROP INDEX IF EXISTS idx_users_username;
 CREATE INDEX idx_users_username ON users (username);
-
--- index for email fast lookups
-DROP INDEX IF EXISTS idx_users_email;
 CREATE INDEX idx_users_email ON users (email);
 
-DROP FUNCTION IF EXISTS create_user (citext, citext, TEXT);
 CREATE OR REPLACE FUNCTION create_user(
     p_username citext,
     p_email citext,
@@ -50,7 +40,6 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS change_password (UUID, TEXT, TEXT);
 CREATE OR REPLACE FUNCTION change_password (
     p_user_id UUID,
     p_old_passwd TEXT,
@@ -78,7 +67,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS verify_password (citext, TEXT);
 CREATE OR REPLACE FUNCTION verify_password(
     p_username citext,
     p_passwd TEXT
@@ -108,7 +96,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS get_user_by_id (uuid);
 CREATE OR REPLACE FUNCTION get_user_by_id(p_uuid uuid)
 RETURNS TABLE(
     username citext,
@@ -123,7 +110,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger function to hash passwords using bcrypt
-DROP FUNCTION IF EXISTS hash_user_password;
 CREATE OR REPLACE FUNCTION hash_user_password()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -136,14 +122,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Attach trigger to users table
-DROP TRIGGER IF EXISTS trg_hash_password ON users;
 CREATE TRIGGER trg_hash_password
 BEFORE INSERT OR UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION hash_user_password();
 
 -- Trigger function to update updated_at
-DROP FUNCTION IF EXISTS update_users_timestamp;
 CREATE OR REPLACE FUNCTION update_users_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -152,7 +136,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_users_update_timestamp ON users;
 CREATE TRIGGER trg_users_update_timestamp
 BEFORE UPDATE ON users
 FOR EACH ROW
@@ -161,14 +144,12 @@ EXECUTE FUNCTION update_users_timestamp();
 ----------------------------------------------------------------
 -- CURRENCIES
 ----------------------------------------------------------------
-DROP TABLE IF EXISTS currencies CASCADE;
 CREATE TABLE currencies (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE, -- e.g. "US Dollar"
     symbol VARCHAR(5) NOT NULL UNIQUE -- e.g. "USD", "GHS"
 );
 
-DROP FUNCTION IF EXISTS get_currency_info;
 CREATE OR REPLACE FUNCTION get_currency_info(
     p_currency_id BIGINT
 )
@@ -188,7 +169,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS get_all_currencies;
 CREATE OR REPLACE FUNCTION get_all_currencies()
 RETURNS SETOF currencies
 AS $$
@@ -205,10 +185,8 @@ $$ LANGUAGE plpgsql;
 ----------------------------------------------------------------
 -- CATEGORIES
 ----------------------------------------------------------------
-DROP TYPE IF EXISTS category_type;
 CREATE TYPE category_type AS ENUM ('expense', 'income');
 
-DROP TABLE IF EXISTS categories;
 CREATE TABLE categories (
     id BIGSERIAL PRIMARY KEY,
     user_id uuid DEFAULT NULL REFERENCES users (id) ON DELETE CASCADE,
@@ -216,7 +194,6 @@ CREATE TABLE categories (
     name VARCHAR(100) NOT NULL UNIQUE
 );
 
-DROP TABLE IF EXISTS subcategories;
 CREATE TABLE subcategories (
     id BIGSERIAL PRIMARY KEY,
     category_id BIGINT NOT NULL REFERENCES categories (id) ON DELETE CASCADE,
@@ -224,13 +201,9 @@ CREATE TABLE subcategories (
     UNIQUE (category_id, name) -- ensures name is unique only within its category
 );
 
-DROP INDEX IF EXISTS idx_categories_user_id;
 CREATE INDEX idx_categories_user_id ON categories (user_id);
-
-DROP INDEX IF EXISTS idx_subcategories_category_id;
 CREATE INDEX idx_subcategories_category_id ON subcategories (category_id);
 
-DROP FUNCTION IF EXISTS add_category;
 CREATE OR REPLACE FUNCTION add_category(
     p_type VARCHAR,
     p_name VARCHAR,
@@ -259,7 +232,6 @@ BEGIN
 END;
 $$;
 
-DROP FUNCTION IF EXISTS add_subcategory;
 CREATE OR REPLACE FUNCTION add_subcategory(
     p_category_id BIGINT,
     p_name VARCHAR
@@ -282,7 +254,6 @@ EXCEPTION
 END;
 $$;
 
-DROP FUNCTION IF EXISTS get_categories;
 CREATE OR REPLACE FUNCTION get_categories()
 RETURNS TABLE (
     category_id BIGINT,
@@ -297,7 +268,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS get_subcategories;
 CREATE OR REPLACE FUNCTION get_subcategories(
     p_category_id BIGINT
 )
@@ -317,3 +287,170 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+----------------------------------------------------------------
+-- ACCOUNTS
+----------------------------------------------------------------
+CREATE TABLE accounts (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    name VARCHAR(25) NOT NULL,
+    balance DECIMAL(18, 2) NOT NULL DEFAULT 0.00,
+    description TEXT,
+    currency_id BIGINT NOT NULL REFERENCES currencies (id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX idx_accounts_user_id_id ON accounts (user_id, id);
+CREATE INDEX idx_accounts_user_id_name ON accounts (user_id, name);
+CREATE INDEX idx_accounts_user_id ON accounts (user_id);
+
+CREATE OR REPLACE FUNCTION create_account(
+    p_user_id UUID,
+    p_name VARCHAR,
+    p_currency_id BIGINT,
+    p_balance DECIMAL(18,2) DEFAULT 0.00,
+    p_description TEXT DEFAULT NULL
+)
+RETURNS TABLE (
+    account_id BIGINT,
+    account_name VARCHAR,
+    currency_name VARCHAR,
+    account_balance DECIMAL(18,2),
+    account_description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE,
+    is_archived BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    account_id BIGINT;
+BEGIN
+    -- check if account name exist for current user
+    IF EXISTS (
+        SELECT 1
+        FROM accounts
+        WHERE user_id = p_user_id AND lower(name) = lower(p_name)
+    ) THEN
+        RAISE EXCEPTION 'Account with name "%" already exists for this user', p_name
+            USING ERRCODE = 'unique_violation';
+    END IF;
+
+    -- insert fresh account
+    -- get the id of the latest insert
+    INSERT INTO accounts(user_id, name, balance, description, currency_id)
+    VALUES (p_user_id, p_name, p_balance, p_description, p_currency_id)
+    RETURNING id INTO account_id;
+
+    -- return account details
+    RETURN QUERY SELECT
+        acc.id,
+        acc.name AS account_name,
+        curr.name AS account_currency_name,
+        acc.balance AS account_balance,
+        acc.description AS account_description,
+        acc.created_at,
+        acc.updated_at,
+        acc.is_archived
+    FROM accounts acc
+    JOIN currencies curr ON acc.currency_id = curr.id
+    WHERE acc.id = account_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION get_account_details (
+    p_account_id bigint,
+    p_user_id uuid
+) RETURNS TABLE (
+    account_name VARCHAR,
+    currency_name VARCHAR,
+    account_balance DECIMAL(18,2),
+    account_description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE,
+    is_archived BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY SELECT
+    acc.name AS account_name,
+    curr.name AS currency_name,
+    acc.balance AS account_balance,
+    acc.description AS account_description,
+    acc.created_at,
+    acc.updated_at,
+    acc.is_archived
+    FROM accounts acc
+    JOIN currencies curr
+    ON acc.currency_id = curr.id
+    WHERE acc.id = p_account_id AND acc.user_id = p_user_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Account not found';
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION archive_account_by_id (
+    p_account_id bigint,
+    p_user_id uuid
+) RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE accounts
+    SET is_archived = TRUE,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = p_account_id AND user_id = p_user_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Account not found';
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION get_all_user_accounts (p_user_id uuid)
+RETURNS TABLE (
+    id bigint,
+    name varchar,
+    balance decimal,
+    currency varchar,
+    description text,
+    created_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE,
+    is_archived BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY SELECT
+    acc.id, acc.name, acc.balance, curr.name as currency,
+    acc.description, acc.created_at, acc.updated_at,
+    acc.is_archived
+    FROM accounts acc
+    JOIN currencies curr
+    ON acc.currency_id = curr.id
+    WHERE acc.user_id = p_user_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No accounts found';
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION update_accounts_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at := CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_accounts_update_timestamp
+BEFORE UPDATE ON accounts
+FOR EACH ROW
+EXECUTE FUNCTION update_accounts_timestamp();

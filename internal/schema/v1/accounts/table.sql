@@ -1,6 +1,3 @@
--- Active: 1758835250687@@127.0.0.1@5432@local@fatch
-DROP TABLE IF EXISTS accounts CASCADE;
-
 CREATE TABLE accounts (
     id BIGSERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
