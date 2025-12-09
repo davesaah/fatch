@@ -454,3 +454,156 @@ CREATE TRIGGER trg_accounts_update_timestamp
 BEFORE UPDATE ON accounts
 FOR EACH ROW
 EXECUTE FUNCTION update_accounts_timestamp();
+
+----------------------------------------------------------------
+-- BUDGETS
+----------------------------------------------------------------
+CREATE TYPE budget_period AS ENUM ('day', 'week', 'month', 'year', 'once');
+CREATE TYPE budget_target_type AS ENUM ('account', 'category', 'subcategory');
+
+CREATE TABLE budgets (
+    id BIGSERIAL PRIMARY KEY,
+    budget_name VARCHAR NOT NULL,
+    amount DECIMAL(18,2) NOT NULL,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    start_date DATE NOT NULL,
+    frequency INT NOT NULL DEFAULT 1 CHECK (frequency > 0),  -- number of periods per cycle
+    period budget_period NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE budget_rules (
+    id BIGSERIAL PRIMARY KEY,
+    budget_id BIGINT NOT NULL REFERENCES budgets(id) ON DELETE CASCADE,
+    target_type budget_target_type NOT NULL,
+    target_id BIGINT NOT NULL
+);
+
+CREATE INDEX idx_budget_rules_target ON budget_rules (target_type, target_id);
+CREATE INDEX idx_budgets_user_id ON budgets (user_id);
+
+CREATE OR REPLACE FUNCTION create_budget(
+    p_user_id UUID,
+    p_name VARCHAR,
+    p_amount DECIMAL(18,2),
+    p_start_date DATE,
+    p_frequency INT DEFAULT 1,
+    p_period budget_period DEFAULT 'month'
+)
+RETURNS VOID
+AS $$
+BEGIN
+    INSERT INTO budgets(user_id, budget_name, amount, start_date, frequency, period)
+    VALUES (p_user_id, p_name, p_amount, p_start_date, p_frequency, p_period);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION add_budget_rule(
+    p_budget_id BIGINT,
+    p_target_type budget_target_type,
+    p_target_id BIGINT
+)
+RETURNS VOID
+AS $$
+BEGIN
+    INSERT INTO budget_rules(budget_id, target_type, target_id)
+    VALUES (p_budget_id, p_target_type, p_target_id);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_budgets_for_target(
+   p_user_id UUID,
+   p_target_type budget_target_type
+)
+RETURNS TABLE (
+    budget_id BIGINT,
+    budget_name VARCHAR,
+    target_id BIGINT,
+    amount DECIMAL(18,2),
+    start_date DATE,
+    frequency INT,
+    period budget_period
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT b.id, b.budget_name, r.target_id, b.amount, b.start_date, b.frequency, b.period
+    FROM budgets b
+    JOIN budget_rules r ON r.budget_id = b.id
+    WHERE b.user_id = p_user_id
+      AND r.target_type = p_target_type
+    ORDER BY b.start_date DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_budget_rules(
+    p_user_id UUID,
+    p_budget_id BIGINT
+)
+RETURNS TABLE (
+    rule_id BIGINT,
+    target_type budget_target_type,
+    target_id BIGINT,
+    amount DECIMAL(18,2),
+    period budget_period,
+    frequency INT,
+    start_date DATE
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT r.id, r.target_type, r.target_id, b.amount, b.period, b.frequency, b.start_date
+    FROM budget_rules r
+    JOIN budgets b ON b.id = r.budget_id
+    WHERE b.user_id = p_user_id
+      AND b.id = p_budget_id
+    ORDER BY r.target_type, r.target_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_user_budgets(p_user_id BIGINT)
+RETURNS TABLE (
+    budget_id BIGINT,
+    amount DECIMAL(18,2),
+    budget_name VARCHAR,
+    start_date DATE,
+    frequency INT,
+    period budget_period,
+    created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT b.id, b.amount, b.budget_name, b.start_date, b.frequency, b.period, b.created_at
+    FROM budgets b
+    WHERE user_id = p_user_id
+    ORDER BY start_date DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- validation from a trigger
+CREATE OR REPLACE FUNCTION validate_budget_rule_target()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.target_type = 'account' THEN
+        IF NOT EXISTS (SELECT 1 FROM accounts WHERE id = NEW.target_id) THEN
+            RAISE EXCEPTION 'Invalid target_id % for target_type account', NEW.target_id;
+        END IF;
+    ELSIF NEW.target_type = 'category' THEN
+        IF NOT EXISTS (SELECT 1 FROM categories WHERE id = NEW.target_id) THEN
+            RAISE EXCEPTION 'Invalid target_id % for target_type category', NEW.target_id;
+        END IF;
+    ELSIF NEW.target_type = 'subcategory' THEN
+        IF NOT EXISTS (SELECT 1 FROM subcategories WHERE id = NEW.target_id) THEN
+            RAISE EXCEPTION 'Invalid target_id % for target_type subcategory', NEW.target_id;
+        END IF;
+    ELSE
+        RAISE EXCEPTION 'Invalid target_type %', NEW.target_type;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- attach trigger to budget rules
+CREATE TRIGGER trg_validate_budget_rule_target
+BEFORE INSERT OR UPDATE ON budget_rules
+FOR EACH ROW
+EXECUTE FUNCTION validate_budget_rule_target();
