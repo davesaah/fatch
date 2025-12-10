@@ -136,8 +136,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		},
 	}
 
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
+	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+	if len(jwtSecret) == 0 {
 		types.ReturnJSON(w, types.InternalServerErrorResponse())
 		return &types.ErrorDetails{
 			Message: "JWT secret key not set",

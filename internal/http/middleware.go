@@ -46,8 +46,8 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		jwtSecret := os.Getenv("JWT_SECRET")
-		if jwtSecret == "" {
+		jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+		if len(jwtSecret) == 0 {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			log.Panic("JWT secret key not set")
 		}
