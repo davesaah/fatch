@@ -3,6 +3,9 @@ DROP SCHEMA IF EXISTS fatch CASCADE;
 CREATE SCHEMA fatch;
 SET search_path TO fatch;
 
+-- for monitoring
+CREATE EXTENSION pg_stat_statements;
+
 -- For gen_random_uuid()
 -- Password hashing.
 CREATE EXTENSION pgcrypto;
