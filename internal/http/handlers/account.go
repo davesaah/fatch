@@ -22,6 +22,7 @@ func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) *types.E
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
 		return &types.ErrorDetails{
 			Message: "Unable to parse json",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -37,6 +38,7 @@ func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) *types.E
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Unable to get currency",
+			Level:   "WARN",
 			Trace:   err,
 		}
 	}
@@ -50,6 +52,7 @@ func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) *types.E
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Unable to create account",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -66,6 +69,7 @@ func (h *Handler) GetAccountByID(w http.ResponseWriter, r *http.Request) *types.
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid account id"))
 		return &types.ErrorDetails{
 			Message: "Unable to convert id to integer",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -83,6 +87,7 @@ func (h *Handler) GetAccountByID(w http.ResponseWriter, r *http.Request) *types.
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Unable to get account",
+			Level:   "DEBUG",
 			Trace:   err,
 		}
 	}
@@ -102,6 +107,7 @@ func (h *Handler) GetAllUserAccounts(w http.ResponseWriter, r *http.Request) *ty
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Unable to get all user accounts",
+			Level:   "DEBUG",
 			Trace:   err,
 		}
 	}
@@ -117,6 +123,7 @@ func (h *Handler) ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *ty
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid account id"))
 		return &types.ErrorDetails{
 			Message: "Unable to convert id to integer",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -128,6 +135,7 @@ func (h *Handler) ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *ty
 		))
 		return &types.ErrorDetails{
 			Message: "Unable to convert archive to boolean",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -146,6 +154,7 @@ func (h *Handler) ArchiveAccountByID(w http.ResponseWriter, r *http.Request) *ty
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Unable to archive account",
+			Level:   "DEBUG",
 			Trace:   err,
 		}
 	}

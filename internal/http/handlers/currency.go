@@ -15,6 +15,7 @@ func (h *Handler) GetCurrencyByID(w http.ResponseWriter, r *http.Request) *types
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid currency id"))
 		return &types.ErrorDetails{
 			Message: "Unable to convert id to integer",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -24,6 +25,7 @@ func (h *Handler) GetCurrencyByID(w http.ResponseWriter, r *http.Request) *types
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Unable to get currency",
+			Level:   "DEBUG",
 			Trace:   err,
 		}
 	}
@@ -37,6 +39,7 @@ func (h *Handler) GetAllCurrencies(w http.ResponseWriter, r *http.Request) *type
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Unable to get all currencies",
+			Level:   "DEBUG",
 			Trace:   err,
 		}
 	}

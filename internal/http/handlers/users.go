@@ -28,6 +28,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) *types.Erro
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
 		return &types.ErrorDetails{
 			Message: "Unable to parse json",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -53,6 +54,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) *types.Erro
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Unable to create a new user",
+			Level:   "DEBUG",
 			Trace:   err,
 		}
 	}

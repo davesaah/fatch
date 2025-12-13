@@ -44,6 +44,7 @@ func (e *ErrorResponse) GetStatusCode() int {
 // ErrorDetails represents detailed error information.
 type ErrorDetails struct {
 	Message string `json:"msg"`
+	Level   string `json:"level"`
 	Trace   error  `json:"trace"`
 }
 
@@ -140,6 +141,7 @@ func ReturnJSON(w http.ResponseWriter, resp Response) *ErrorDetails {
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		return &ErrorDetails{
 			Message: "Failed to encode response",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}

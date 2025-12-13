@@ -32,6 +32,7 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) *types.
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
 		return &types.ErrorDetails{
 			Message: "Unable to parse json",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -69,6 +70,7 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) *types.
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Failed to change password",
+			Level:   "WARN",
 			Trace:   err,
 		}
 	}
@@ -94,6 +96,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
 		return &types.ErrorDetails{
 			Message: "Unable to parse json",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}
@@ -112,6 +115,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Failed to verify password",
+			Level:   "WARN",
 			Trace:   err,
 		}
 	}
@@ -122,6 +126,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		types.ReturnJSON(w, errResponse)
 		return &types.ErrorDetails{
 			Message: "Failed to get user info",
+			Level:   "DEBUG",
 			Trace:   err,
 		}
 	}
@@ -141,6 +146,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		types.ReturnJSON(w, types.InternalServerErrorResponse())
 		return &types.ErrorDetails{
 			Message: "JWT secret key not set",
+			Level:   "ERROR",
 			Trace:   nil,
 		}
 	}
@@ -151,6 +157,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		types.ReturnJSON(w, types.InternalServerErrorResponse())
 		return &types.ErrorDetails{
 			Message: "Failed to create jwt token",
+			Level:   "ERROR",
 			Trace:   err,
 		}
 	}

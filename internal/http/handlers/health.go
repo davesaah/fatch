@@ -37,6 +37,7 @@ func (h *Handler) HealthCheck(w http.ResponseWriter, r *http.Request) *types.Err
 		return &types.ErrorDetails{
 			Trace:   fmt.Errorf("Missing env values: %+v", missingValues),
 			Message: "Not all env variables are set",
+			Level:   "ERROR",
 		}
 	}
 
@@ -45,6 +46,7 @@ func (h *Handler) HealthCheck(w http.ResponseWriter, r *http.Request) *types.Err
 		types.ReturnJSON(w, types.ServiceUnavailableErrorResponse())
 		return &types.ErrorDetails{
 			Trace:   err,
+			Level:   "ERROR",
 			Message: "Failed to ping DB",
 		}
 	}

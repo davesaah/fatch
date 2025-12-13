@@ -8,8 +8,6 @@ import (
 	"gitlab.com/davesaah/fatch/types"
 )
 
-type CurrencyService struct{}
-
 func (s *Service) GetCurrencyByID(
 	ctx context.Context, id int,
 ) (*database.GetCurrencyByIDRow, *types.ErrorResponse, error) {

@@ -1,6 +1,4 @@
-DROP SCHEMA IF EXISTS logging CASCADE;
-CREATE SCHEMA logging;
-SET search_path TO logging;
+SET search_path TO fatch;
 
 CREATE TABLE logs (
   id BIGSERIAL,
@@ -60,3 +58,8 @@ $$;
 --   'health',
 --   '{"msg":"HTTP request","method":"GET","url":"/health","status":200,"remote_addr":"[::1]:39322","duration_ms":1}'
 -- );
+
+-- select * from logs
+-- order by id DESC;
+--
+-- TRUNCATE TABLE logs RESTART IDENTITY CASCADE;
