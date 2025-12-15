@@ -1,56 +1,52 @@
 package middleware
 
 import (
-	"context"
-	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
 	"gitlab.com/davesaah/fatch/internal/database"
 	"gitlab.com/davesaah/fatch/internal/http/handlers"
+	"gitlab.com/davesaah/fatch/pubsub"
+	"gitlab.com/davesaah/fatch/types"
 )
 
-// const (
-// 	maxMemoryBytes  = 5 * 1024 * 1024
-// 	avgLogSizeBytes = 200
-// )
-//
-// var (
-// 	maxBatchSize = maxMemoryBytes / avgLogSizeBytes
-// 	logChan      = make(chan database.Log, 10000) // 10,000 logs peak
-// )
+// HandlerFuncWithErr is a handler that returns an error
+type HandlerFuncWithErr func(w http.ResponseWriter, r *http.Request) *types.ErrorDetails
 
-func LoggerMiddleware(h *handlers.Handler) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Use ResponseWriterWrapper to capture status code
-			ww := &responseWriterWrapper{ResponseWriter: w, status: http.StatusOK}
+// MakeHandler wraps HandlerFuncWithErr into an http.HandlerFunc and logs errors
+func MakeHandler(hf HandlerFuncWithErr, h *handlers.Handler, ps *pubsub.PubSub) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Use ResponseWriterWrapper to capture status code
+		ww := &responseWriterWrapper{ResponseWriter: w, status: http.StatusOK}
 
-			next.ServeHTTP(ww, r)
-			url := r.URL.String()
+		url := r.URL.String()
 
-			go func() {
-				ctx := context.WithoutCancel(r.Context())
+		start := time.Now()
+		err := hf(ww, r)
 
-				err := h.Service.Log(ctx, &database.Log{
-					Level:     "INFO",
-					Service:   strings.Split(url, "/")[1], // extract service info
-					Timestamp: time.Now(),
-					LogData: map[string]any{
-						"method":      r.Method,
-						"url":         url,
-						"status":      ww.status,
-						"remote_addr": r.RemoteAddr,
-						"userID":      ctx.Value("userID"),
-					},
-				})
+		logItem := database.Log{
+			Level:     "INFO",
+			Service:   strings.Split(url, "/")[1], // extract service info
+			Timestamp: time.Now(),
+			LogData: map[string]any{
+				"method":      r.Method,
+				"url":         url,
+				"status":      ww.status,
+				"remote_addr": r.RemoteAddr,
+				"userID":      r.Context().Value("userID"),
+				"duration":    time.Since(start).String(),
+			},
+		}
 
-				if err != nil {
-					slog.Error(err.Error(), "origin", "LoggerMiddleware")
-				}
-			}()
-		})
+		if err != nil {
+			logItem.Level = err.Level
+			logItem.LogData["msg"] = err.Message
+			logItem.LogData["trace"] = err.Trace
+			logItem.LogData["duration"] = time.Since(start).String()
+		}
+
+		ps.Publish("logs", logItem)
 	}
 }
 

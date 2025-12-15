@@ -10,6 +10,16 @@ import (
 	internalHTTP "gitlab.com/davesaah/fatch/internal/http"
 	"gitlab.com/davesaah/fatch/internal/http/handlers"
 	"gitlab.com/davesaah/fatch/internal/services"
+	"gitlab.com/davesaah/fatch/pubsub"
+)
+
+const (
+	maxMemoryBytes  = 5 * 1024 * 1024
+	avgLogSizeBytes = 200
+)
+
+var (
+	maxBatchSize = maxMemoryBytes / avgLogSizeBytes
 )
 
 // @title Fatch API
@@ -19,15 +29,30 @@ import (
 // @BasePath /
 func main() {
 	ctx := context.Background()
+
+	// create database pool
 	pool, err := database.NewPool(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pool.Close()
 
+	// create pub/sub for realtime streaming
+	ps := pubsub.New()
+	sub := ps.Subscribe("logs", maxBatchSize)
+
+	// Initialise API layers
 	service := services.NewService(pool)
+
+	// stream logs to DB
+	go func() {
+		for msg := range sub {
+			service.Log(ctx, &msg)
+		}
+	}()
+
 	handler := handlers.NewHandler(service)
-	router := internalHTTP.NewRouter(handler)
+	router := internalHTTP.NewRouter(handler, ps)
 
 	log.Println("API server started on http://localhost:8000")
 	if os.Getenv("ENVIRONMENT") == "dev" {

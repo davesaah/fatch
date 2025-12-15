@@ -10,12 +10,13 @@ import (
 	"github.com/go-chi/httprate"
 	"gitlab.com/davesaah/fatch/internal/http/handlers"
 	"gitlab.com/davesaah/fatch/internal/http/middleware"
+	"gitlab.com/davesaah/fatch/pubsub"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-func NewRouter(h *handlers.Handler) http.Handler {
+func NewRouter(h *handlers.Handler, ps *pubsub.PubSub) http.Handler {
 	origins := []string{"http://localhost:8000"}
 
 	r := chi.NewRouter()
@@ -49,31 +50,30 @@ func NewRouter(h *handlers.Handler) http.Handler {
 		r.Get("/swagger/doc.json", h.ServeDocFile)
 	}
 
-	r.Get("/health", middleware.MakeHandler(h.HealthCheck, h))
+	r.Get("/health", middleware.MakeHandler(h.HealthCheck, h, ps))
 
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/login", middleware.MakeHandler(h.Login, h))
-		r.Post("/register", middleware.MakeHandler(h.CreateUser, h))
+		r.Post("/login", middleware.MakeHandler(h.Login, h, ps))
+		r.Post("/register", middleware.MakeHandler(h.CreateUser, h, ps))
 		// r.Post("/verify", middleware.Handler(h.VerifyUser))
 	})
 
 	// PROTECTED ROUTES: Requires authentication
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JWTAuthMiddleware)
-		r.Use(middleware.LoggerMiddleware(h))
 
-		r.Patch("/users/passwd", middleware.MakeHandler(h.ChangePassword, h))
+		r.Patch("/users/passwd", middleware.MakeHandler(h.ChangePassword, h, ps))
 
 		r.Route("/currencies", func(r chi.Router) {
-			r.Get("/", middleware.MakeHandler(h.GetAllCurrencies, h))
-			r.Get("/{id}", middleware.MakeHandler(h.GetCurrencyByID, h))
+			r.Get("/", middleware.MakeHandler(h.GetAllCurrencies, h, ps))
+			r.Get("/{id}", middleware.MakeHandler(h.GetCurrencyByID, h, ps))
 		})
 
 		r.Route("/accounts", func(r chi.Router) {
-			r.Post("/", middleware.MakeHandler(h.CreateAccount, h))
-			r.Get("/{id}", middleware.MakeHandler(h.GetAccountByID, h))
-			r.Get("/", middleware.MakeHandler(h.GetAllUserAccounts, h))
-			r.Patch("/{id}", middleware.MakeHandler(h.ArchiveAccountByID, h))
+			r.Post("/", middleware.MakeHandler(h.CreateAccount, h, ps))
+			r.Get("/{id}", middleware.MakeHandler(h.GetAccountByID, h, ps))
+			r.Get("/", middleware.MakeHandler(h.GetAllUserAccounts, h, ps))
+			r.Patch("/{id}", middleware.MakeHandler(h.ArchiveAccountByID, h, ps))
 		})
 	})
 
