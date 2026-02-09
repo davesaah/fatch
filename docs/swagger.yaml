@@ -1,6 +1,6 @@
 basePath: /v1
 definitions:
-  database.CreateUserParams:
+  database.RegisterUserParams:
     properties:
       email:
         type: string
@@ -113,7 +113,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/database.CreateUserParams'
+          $ref: '#/definitions/database.RegisterUserParams'
       produces:
       - application/json
       responses:

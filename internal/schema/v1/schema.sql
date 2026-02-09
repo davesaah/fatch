@@ -1,10 +1,9 @@
 -- v1 of DB Schema for fatch
 DROP SCHEMA IF EXISTS fatch CASCADE;
-CREATE SCHEMA fatch;
-SET search_path TO fatch;
 
--- for monitoring
-CREATE EXTENSION pg_stat_statements;
+CREATE SCHEMA fatch;
+
+SET search_path TO fatch;
 
 -- For gen_random_uuid()
 -- Password hashing.
@@ -14,32 +13,94 @@ CREATE EXTENSION pgcrypto;
 CREATE EXTENSION citext;
 
 ----------------------------------------------------------------
--- USERS 
+-- TEMP USERS --> Before verification
+----------------------------------------------------------------
+CREATE TABLE temp_users (
+    username citext NOT NULL UNIQUE,
+    email citext NOT NULL UNIQUE,
+    passwd TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    otp INT NOT NULL
+);
+
+----------------------------------------------------------------
+-- USERS
 ----------------------------------------------------------------
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     username citext NOT NULL UNIQUE,
     email citext NOT NULL UNIQUE,
     passwd TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_users_username ON users (username);
+
 CREATE INDEX idx_users_email ON users (email);
 
 CREATE OR REPLACE FUNCTION create_user(
     p_username citext,
     p_email citext,
     p_passwd TEXT
+) RETURNS INT
+AS $$
+DECLARE
+    v_user_exists BOOLEAN;
+    otp INT; -- 6 digit otp
+BEGIN
+    SELECT EXISTS(
+        SELECT 1 FROM users
+        WHERE username = p_username OR email = p_email
+    ) INTO v_user_exists;
+
+    IF v_user_exists THEN
+        RAISE EXCEPTION 'Username or email already exists';
+    END IF;
+
+    otp := floor(random() * 900000 + 100000)::int;
+
+    INSERT INTO temp_users(username, email, passwd, otp)
+    VALUES (p_username, p_email, p_passwd, otp);
+
+    RETURN otp;
+    EXCEPTION
+        WHEN unique_violation THEN
+            RAISE EXCEPTION 'Username or email already exists';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verify_user(
+    p_username citext,
+    p_password TEXT,
+    p_otp INT
 ) RETURNS VOID
 AS $$
+DECLARE
+    v_user temp_users;
 BEGIN
-    INSERT INTO users(username, email, passwd)
-    VALUES (p_username, p_email, p_passwd);
-EXCEPTION
-    WHEN unique_violation THEN
-        RAISE EXCEPTION 'Username or email already exists';
+    SELECT * INTO v_user FROM temp_users
+    WHERE username = p_username;
+
+    IF NOT (v_user.passwd = crypt(p_password, v_user.passwd)) THEN
+        RAISE EXCEPTION 'Invalid password';
+    END IF;
+
+    IF v_user.otp <> p_otp THEN
+        RAISE EXCEPTION 'Invalid OTP';
+    END IF;
+
+
+    INSERT INTO users(username, email, passwd, created_at)
+    VALUES (v_user.username, v_user.email, p_password, v_user.created_at);
+
+    DELETE FROM temp_users
+    WHERE username = p_username;
+
+
+	EXCEPTION
+    	WHEN not_null_violation THEN
+        	RAISE EXCEPTION 'Invalid user verfication for user "%"', p_username;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -124,9 +185,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Attach trigger to users table
+-- Attach trigger to users and temp_users tables
 CREATE TRIGGER trg_hash_password
 BEFORE INSERT OR UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION hash_user_password();
+
+CREATE TRIGGER trg_hash_temp_password
+BEFORE INSERT OR UPDATE ON temp_users
 FOR EACH ROW
 EXECUTE FUNCTION hash_user_password();
 
@@ -205,6 +271,7 @@ CREATE TABLE subcategories (
 );
 
 CREATE INDEX idx_categories_user_id ON categories (user_id);
+
 CREATE INDEX idx_subcategories_category_id ON subcategories (category_id);
 
 CREATE OR REPLACE FUNCTION add_category(
@@ -307,7 +374,9 @@ CREATE TABLE accounts (
 );
 
 CREATE INDEX idx_accounts_user_id_id ON accounts (user_id, id);
+
 CREATE INDEX idx_accounts_user_id_name ON accounts (user_id, name);
+
 CREATE INDEX idx_accounts_user_id ON accounts (user_id);
 
 CREATE OR REPLACE FUNCTION create_account(
@@ -462,27 +531,29 @@ EXECUTE FUNCTION update_accounts_timestamp();
 -- BUDGETS
 ----------------------------------------------------------------
 CREATE TYPE budget_period AS ENUM ('day', 'week', 'month', 'year', 'once');
+
 CREATE TYPE budget_target_type AS ENUM ('account', 'category', 'subcategory');
 
 CREATE TABLE budgets (
     id BIGSERIAL PRIMARY KEY,
     budget_name VARCHAR NOT NULL,
-    amount DECIMAL(18,2) NOT NULL,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(18, 2) NOT NULL,
+    user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     start_date DATE NOT NULL,
-    frequency INT NOT NULL DEFAULT 1 CHECK (frequency > 0),  -- number of periods per cycle
+    frequency INT NOT NULL DEFAULT 1 CHECK (frequency > 0), -- number of periods per cycle
     period budget_period NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE budget_rules (
     id BIGSERIAL PRIMARY KEY,
-    budget_id BIGINT NOT NULL REFERENCES budgets(id) ON DELETE CASCADE,
+    budget_id BIGINT NOT NULL REFERENCES budgets (id) ON DELETE CASCADE,
     target_type budget_target_type NOT NULL,
     target_id BIGINT NOT NULL
 );
 
 CREATE INDEX idx_budget_rules_target ON budget_rules (target_type, target_id);
+
 CREATE INDEX idx_budgets_user_id ON budgets (user_id);
 
 CREATE OR REPLACE FUNCTION create_budget(

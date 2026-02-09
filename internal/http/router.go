@@ -2,15 +2,14 @@ package internalHTTP
 
 import (
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/davesaah/fatch/internal/http/handlers"
+	"github.com/davesaah/fatch/internal/http/middleware"
+	"github.com/davesaah/fatch/pubsub"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
-	"gitlab.com/davesaah/fatch/internal/http/handlers"
-	"gitlab.com/davesaah/fatch/internal/http/middleware"
-	"gitlab.com/davesaah/fatch/pubsub"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -39,10 +38,10 @@ func NewRouter(h *handlers.Handler, ps *pubsub.PubSub) http.Handler {
 	r.Use(httprate.LimitByIP(100, 1*time.Minute))
 
 	// add timeout to request
-	r.Use(chiMiddleware.Timeout(time.Second * 1))
+	r.Use(chiMiddleware.Timeout(time.Second * 5))
 
 	// API ROUTES
-	if os.Getenv("ENVIRONMENT") == "dev" {
+	if h.Config.Environment == "development" {
 		r.Mount("/debug", chiMiddleware.Profiler()) // profiler
 
 		// Swagger documentation
@@ -54,15 +53,15 @@ func NewRouter(h *handlers.Handler, ps *pubsub.PubSub) http.Handler {
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/login", middleware.MakeHandler(h.Login, h, ps))
-		r.Post("/register", middleware.MakeHandler(h.CreateUser, h, ps))
-		// r.Post("/verify", middleware.Handler(h.VerifyUser))
+		r.Post("/register", middleware.MakeHandler(h.Register, h, ps))
+		r.Post("/verify", middleware.MakeHandler(h.VerifyUser, h, ps))
 	})
 
 	// PROTECTED ROUTES: Requires authentication
 	r.Group(func(r chi.Router) {
-		r.Use(middleware.JWTAuthMiddleware)
+		r.Use(middleware.JWTAuthMiddleware(h.Config.JWTSecret))
 
-		r.Patch("/users/passwd", middleware.MakeHandler(h.ChangePassword, h, ps))
+		r.Patch("/auth/passwd", middleware.MakeHandler(h.ChangePassword, h, ps))
 
 		r.Route("/currencies", func(r chi.Router) {
 			r.Get("/", middleware.MakeHandler(h.GetAllCurrencies, h, ps))

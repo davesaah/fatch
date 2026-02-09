@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/davesaah/fatch/internal/database"
-	"gitlab.com/davesaah/fatch/internal/http/handlers"
-	"gitlab.com/davesaah/fatch/pubsub"
-	"gitlab.com/davesaah/fatch/types"
+	"github.com/davesaah/fatch/internal/database"
+	"github.com/davesaah/fatch/internal/http/handlers"
+	"github.com/davesaah/fatch/pubsub"
+	"github.com/davesaah/fatch/types"
 )
 
 // HandlerFuncWithErr is a handler that returns an error

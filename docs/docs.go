@@ -130,7 +130,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/database.CreateUserParams"
+                            "$ref": "#/definitions/database.RegisterUserParams"
                         }
                     }
                 ],
@@ -170,7 +170,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "database.CreateUserParams": {
+        "database.RegisterUserParams": {
             "type": "object",
             "properties": {
                 "email": {

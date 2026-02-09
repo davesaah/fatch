@@ -5,19 +5,19 @@ package database
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
+	"github.com/davesaah/fatch/internal/config"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewPool(ctx context.Context) (*pgxpool.Pool, error) {
+func NewPool(ctx context.Context, config *config.DBConfig) (*pgxpool.Pool, error) {
 	dburl := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?search_path=%s",
-		os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"), os.Getenv("DB_NAME"), os.Getenv("DB_SCHEMA"),
+		config.User, config.Password, config.Host,
+		config.Port, config.Name, config.Schema,
 	)
 
 	poolConfig, err := pgxpool.ParseConfig(dburl)

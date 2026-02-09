@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/davesaah/fatch/types"
 	"github.com/go-chi/chi/v5"
-	"gitlab.com/davesaah/fatch/types"
 )
 
 func (h *Handler) GetCurrencyByID(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {

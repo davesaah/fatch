@@ -3,10 +3,10 @@ package services
 import (
 	"context"
 
+	"github.com/davesaah/fatch/internal/database"
+	"github.com/davesaah/fatch/types"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/internal/database"
-	"gitlab.com/davesaah/fatch/types"
 )
 
 func (s *Service) Login(

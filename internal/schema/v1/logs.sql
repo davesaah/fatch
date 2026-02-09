@@ -1,29 +1,23 @@
 SET search_path TO fatch;
 
 CREATE TABLE logs (
-  id BIGSERIAL,
-  timestamp TIMESTAMPTZ NOT NULL,
-
-  -- hot, frequently filtered fields
-  level TEXT NOT NULL,
-  service TEXT NOT NULL,
-
-  -- flexible payload
-  log_data JSONB NOT NULL,
-  PRIMARY KEY (timestamp, id)
-) PARTITION BY RANGE (timestamp);
-
+    id BIGSERIAL,
+    timestamp TIMESTAMPTZ NOT NULL,
+    level TEXT NOT NULL,
+    service TEXT NOT NULL,
+    log_data JSONB NOT NULL,
+    PRIMARY KEY (timestamp, id)
+)
+PARTITION BY
+    RANGE (timestamp);
 
 -- time index
-CREATE INDEX idx_logs_timestamp
-ON logs (timestamp);
+CREATE INDEX idx_logs_timestamp ON logs (timestamp);
 
 -- hot filters
-CREATE INDEX idx_logs_level
-ON logs (level);
+CREATE INDEX idx_logs_level ON logs (level);
 
-CREATE INDEX idx_logs_service
-ON logs (service);
+CREATE INDEX idx_logs_service ON logs (service);
 
 CREATE OR REPLACE FUNCTION insert_log(
   p_timestamp TIMESTAMPTZ,

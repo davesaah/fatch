@@ -3,7 +3,7 @@ package pubsub
 import (
 	"sync"
 
-	"gitlab.com/davesaah/fatch/internal/database"
+	"github.com/davesaah/fatch/internal/database"
 )
 
 type Subscriber chan database.Log

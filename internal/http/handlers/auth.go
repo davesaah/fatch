@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/davesaah/fatch/internal/database"
+	"github.com/davesaah/fatch/types"
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/internal/database"
-	"gitlab.com/davesaah/fatch/types"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -141,7 +140,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		},
 	}
 
-	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+	jwtSecret := []byte(h.Config.JWTSecret)
 	if len(jwtSecret) == 0 {
 		types.ReturnJSON(w, types.InternalServerErrorResponse())
 		return &types.ErrorDetails{
@@ -170,8 +169,102 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 		HttpOnly: true,
 		Secure:   false, // true --> for https
 		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(15 * time.Minute),
 	})
 
 	// return success response
 	return types.ReturnJSON(w, types.OKResponse(responseMsg, nil))
+}
+
+// @Summary Register a new user
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param request body database.RegisterParams true "Request body for registering a new user"
+// @Success 201 {object} types.SuccessResponse
+// @Failure 400 {object} types.ErrorResponse
+// @Failure 412 {object} types.ErrorResponse
+// @Failure 409 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
+// @Router /auth/register [post]
+func (h *Handler) Register(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+	ctx := r.Context()
+
+	// get & validate json data from request body
+	var params database.RegisterUserParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		return &types.ErrorDetails{
+			Message: "Unable to parse json",
+			Level:   "ERROR",
+			Trace:   err,
+		}
+	}
+
+	// VALIDATE INPUT
+	// Missing fields validation
+	if params.Email == "" || params.Username == "" || params.Passwd == "" {
+		return types.ReturnJSON(w, types.BadRequestErrorResponse("No empty fields allowed"))
+	}
+
+	// password length validation
+	if len(params.Passwd) < 8 {
+		return types.ReturnJSON(w,
+			types.PreconditionFailedErrorResponse("Password must be at least 8 characters long"),
+		)
+	}
+
+	// TODO: Validate email with OTP
+
+	// call service to create user
+	otp, errResponse, err := h.Service.CreateUser(ctx, params)
+	if err != nil {
+		types.ReturnJSON(w, errResponse)
+		return &types.ErrorDetails{
+			Message: "Unable to create a new user",
+			Level:   "DEBUG",
+			Trace:   err,
+		}
+	}
+
+	// return success response
+	return types.ReturnJSON(w, types.CreatedResponse(
+		"User created successfully. Please verify your email",
+		map[string]int{"otp": otp},
+	))
+}
+
+func (h *Handler) VerifyUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+	ctx := r.Context()
+
+	// get & validate json data from request body
+	var params database.VerifyUserParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		return &types.ErrorDetails{
+			Message: "Unable to parse json",
+			Level:   "ERROR",
+			Trace:   err,
+		}
+	}
+
+	// VALIDATE INPUT
+	// Missing fields validation
+	if params.Username == "" || params.OTP == 0 || params.Passwd == "" {
+		return types.ReturnJSON(w, types.BadRequestErrorResponse("No empty fields allowed"))
+	}
+
+	// call service to verify user
+	errResponse, err := h.Service.VerifyUser(ctx, params)
+	if err != nil {
+		types.ReturnJSON(w, errResponse)
+		return &types.ErrorDetails{
+			Message: "Unable to verify user",
+			Level:   "DEBUG",
+			Trace:   err,
+		}
+	}
+
+	// return success response
+	return types.ReturnJSON(w, types.OKResponse("User verified successfully", nil))
 }

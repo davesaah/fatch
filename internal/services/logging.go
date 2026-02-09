@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"gitlab.com/davesaah/fatch/internal/database"
+	"github.com/davesaah/fatch/internal/database"
 )
 
 func (s *Service) Log(ctx context.Context, arg *database.Log) error {

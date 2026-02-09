@@ -6,10 +6,16 @@ import (
 
 // USERS
 
-type CreateUserParams struct {
+type RegisterUserParams struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Passwd   string `json:"passwd"`
+}
+
+type VerifyUserParams struct {
+	Username string `json:"username"`
+	Passwd   string `json:"passwd"`
+	OTP      int    `json:"otp"`
 }
 
 type ChangePasswordParams struct {

@@ -4,13 +4,13 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 
-	"gitlab.com/davesaah/fatch/internal/database"
-	internalHTTP "gitlab.com/davesaah/fatch/internal/http"
-	"gitlab.com/davesaah/fatch/internal/http/handlers"
-	"gitlab.com/davesaah/fatch/internal/services"
-	"gitlab.com/davesaah/fatch/pubsub"
+	"github.com/davesaah/fatch/internal/config"
+	"github.com/davesaah/fatch/internal/database"
+	internalHTTP "github.com/davesaah/fatch/internal/http"
+	"github.com/davesaah/fatch/internal/http/handlers"
+	"github.com/davesaah/fatch/internal/services"
+	"github.com/davesaah/fatch/pubsub"
 )
 
 const (
@@ -30,8 +30,14 @@ var (
 func main() {
 	ctx := context.Background()
 
+	// load config
+	config, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("Failed to load config:", err)
+	}
+
 	// create database pool
-	pool, err := database.NewPool(ctx)
+	pool, err := database.NewPool(ctx, &config.DBConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,11 +57,11 @@ func main() {
 		}
 	}()
 
-	handler := handlers.NewHandler(service)
+	handler := handlers.NewHandler(service, config)
 	router := internalHTTP.NewRouter(handler, ps)
 
 	log.Println("API server started on http://localhost:8000")
-	if os.Getenv("ENVIRONMENT") == "dev" {
+	if config.Environment == "development" {
 		log.Println("API docs available at http://localhost:8000/swagger/index.html")
 		log.Println("API profiler available at http://localhost:8000/debug")
 	}

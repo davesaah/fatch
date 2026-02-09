@@ -124,7 +124,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/database.CreateUserParams"
+                            "$ref": "#/definitions/database.RegisterUserParams"
                         }
                     }
                 ],
@@ -164,7 +164,7 @@
         }
     },
     "definitions": {
-        "database.CreateUserParams": {
+        "database.RegisterUserParams": {
             "type": "object",
             "properties": {
                 "email": {

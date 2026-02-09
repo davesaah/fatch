@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/davesaah/fatch/internal/database"
+	"github.com/davesaah/fatch/types"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/internal/database"
-	"gitlab.com/davesaah/fatch/types"
 )
 
 func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {

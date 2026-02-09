@@ -3,32 +3,33 @@ package services
 import (
 	"context"
 
+	"github.com/davesaah/fatch/internal/database"
+	"github.com/davesaah/fatch/types"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
-	"gitlab.com/davesaah/fatch/internal/database"
-	"gitlab.com/davesaah/fatch/types"
 )
 
 func (s *Service) CreateUser(
-	ctx context.Context, params database.CreateUserParams,
-) (*types.ErrorResponse, error) {
+	ctx context.Context, params database.RegisterUserParams,
+) (int, *types.ErrorResponse, error) {
 	tx, err := s.DB.Begin(ctx)
 	if err != nil {
-		return types.InternalServerErrorResponse(), err
+		return 0, types.InternalServerErrorResponse(), err
 	}
 	defer tx.Rollback(ctx)
 
 	qb := database.NewQueryBuilder(tx)
-	if err := qb.CreateUser(ctx, params); err != nil {
+	otp, err := qb.CreateUser(ctx, params)
+	if err != nil {
 		pgErr := err.(*pgconn.PgError)
-		return types.ConflictErrorResponse(pgErr.Message), err
+		return 0, types.ConflictErrorResponse(pgErr.Message), err
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return types.InternalServerErrorResponse(), err
+		return 0, types.InternalServerErrorResponse(), err
 	}
 
-	return nil, nil
+	return otp, nil, nil
 }
 
 func (s *Service) GetUserByID(
@@ -51,4 +52,26 @@ func (s *Service) GetUserByID(
 	}
 
 	return row, nil, nil
+}
+
+func (s *Service) VerifyUser(
+	ctx context.Context, params database.VerifyUserParams,
+) (*types.ErrorResponse, error) {
+	tx, err := s.DB.Begin(ctx)
+	if err != nil {
+		return types.InternalServerErrorResponse(), err
+	}
+	defer tx.Rollback(ctx)
+
+	qb := database.NewQueryBuilder(tx)
+	if err := qb.VerifyUser(ctx, params); err != nil {
+		pgErr := err.(*pgconn.PgError)
+		return types.ConflictErrorResponse(pgErr.Message), err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return types.InternalServerErrorResponse(), err
+	}
+
+	return nil, nil
 }
