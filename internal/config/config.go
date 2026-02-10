@@ -15,10 +15,17 @@ type DBConfig struct {
 	Schema   string `json:"SCHEMA"`
 }
 
+type MailConfig struct {
+	Host string `json:"HOST"`
+	Key  string `json:"API_KEY"`
+	From string `json:"FROM"`
+}
+
 type Config struct {
-	DBConfig    DBConfig `json:"DB"`
-	Environment string   `json:"ENVIRONMENT"`
-	JWTSecret   string   `json:"JWT_SECRET"`
+	DBConfig    DBConfig   `json:"DB"`
+	MailConfig  MailConfig `json:"MAIL"`
+	Environment string     `json:"ENVIRONMENT"`
+	JWTSecret   string     `json:"JWT_SECRET"`
 }
 
 // LoadConfig loads the .env file and returns a Config struct

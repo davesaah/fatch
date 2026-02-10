@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/davesaah/fatch/internal/database"
+	"github.com/davesaah/fatch/internal/mailer"
 	"github.com/davesaah/fatch/types"
 	"github.com/jackc/pgx/v5/pgtype"
 
@@ -227,11 +228,19 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) *types.ErrorD
 		}
 	}
 
+	// send OTP to user's email
+	mailer := mailer.New(h.Config.MailConfig)
+	if err := mailer.Send(params.Email, "Fatch OTP", fmt.Sprintf("Your OTP is: %d", otp)); err != nil {
+		types.ReturnJSON(w, types.InternalServerErrorResponse())
+		return &types.ErrorDetails{
+			Message: "Unable to send OTP to user's email",
+			Level:   "DEBUG",
+			Trace:   err,
+		}
+	}
+
 	// return success response
-	return types.ReturnJSON(w, types.CreatedResponse(
-		"User created successfully. Please verify your email",
-		map[string]int{"otp": otp},
-	))
+	return types.ReturnJSON(w, types.CreatedResponse("User created successfully. Please verify your email", nil))
 }
 
 func (h *Handler) VerifyUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
