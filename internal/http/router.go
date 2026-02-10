@@ -55,13 +55,19 @@ func NewRouter(h *handlers.Handler, ps *pubsub.PubSub) http.Handler {
 		r.Post("/login", middleware.MakeHandler(h.Login, h, ps))
 		r.Post("/register", middleware.MakeHandler(h.Register, h, ps))
 		r.Post("/verify", middleware.MakeHandler(h.VerifyUser, h, ps))
+
+		// Protected auth routes
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.JWTAuthMiddleware(h.Config.JWTSecret))
+			r.Patch("/passwd", middleware.MakeHandler(h.ChangePassword, h, ps))
+			r.Post("/logout", middleware.MakeHandler(h.Logout, h, ps))
+			// r.Post("/delete", middleware.MakeHandler(h.DeleteUser, h, ps))
+		})
 	})
 
 	// PROTECTED ROUTES: Requires authentication
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JWTAuthMiddleware(h.Config.JWTSecret))
-
-		r.Patch("/auth/passwd", middleware.MakeHandler(h.ChangePassword, h, ps))
 
 		r.Route("/currencies", func(r chi.Router) {
 			r.Get("/", middleware.MakeHandler(h.GetAllCurrencies, h, ps))

@@ -277,3 +277,19 @@ func (h *Handler) VerifyUser(w http.ResponseWriter, r *http.Request) *types.Erro
 	// return success response
 	return types.ReturnJSON(w, types.OKResponse("User verified successfully", nil))
 }
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   false, // match Login setting
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	// return success response
+	return types.ReturnJSON(w, types.OKResponse("User logged out successfully", nil))
+}
