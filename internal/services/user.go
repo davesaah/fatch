@@ -75,3 +75,23 @@ func (s *Service) VerifyUser(
 
 	return nil, nil
 }
+
+func (s *Service) DeleteUser(ctx context.Context, params database.DeleteUserParams) (*types.ErrorResponse, error) {
+	tx, err := s.DB.Begin(ctx)
+	if err != nil {
+		return types.InternalServerErrorResponse(), err
+	}
+	defer tx.Rollback(ctx)
+
+	qb := database.NewQueryBuilder(tx)
+	if err := qb.DeleteUser(ctx, params); err != nil {
+		pgErr := err.(*pgconn.PgError)
+		return types.ConflictErrorResponse(pgErr.Message), err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return types.InternalServerErrorResponse(), err
+	}
+
+	return nil, nil
+}

@@ -24,6 +24,11 @@ type ChangePasswordParams struct {
 	NewPasswd string      `json:"new_passwd"`
 }
 
+type DeleteUserParams struct {
+	UserID pgtype.UUID `json:"-"`
+	Passwd string      `json:"passwd"`
+}
+
 type LoginParams struct {
 	Username string `json:"username"`
 	Passwd   string `json:"passwd"`

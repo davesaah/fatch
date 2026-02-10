@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/davesaah/fatch/internal/database"
-	"github.com/davesaah/fatch/internal/mailer"
+	// "github.com/davesaah/fatch/internal/mailer"
 	"github.com/davesaah/fatch/types"
 	"github.com/jackc/pgx/v5/pgtype"
 
@@ -215,8 +215,6 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) *types.ErrorD
 		)
 	}
 
-	// TODO: Validate email with OTP
-
 	// call service to create user
 	otp, errResponse, err := h.Service.CreateUser(ctx, params)
 	if err != nil {
@@ -228,19 +226,23 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) *types.ErrorD
 		}
 	}
 
-	// send OTP to user's email
-	mailer := mailer.New(h.Config.MailConfig)
-	if err := mailer.Send(params.Email, "Fatch OTP", fmt.Sprintf("Your OTP is: %d", otp)); err != nil {
-		types.ReturnJSON(w, types.InternalServerErrorResponse())
-		return &types.ErrorDetails{
-			Message: "Unable to send OTP to user's email",
-			Level:   "DEBUG",
-			Trace:   err,
-		}
-	}
+	// // send OTP to user's email
+	// mailer := mailer.New(h.Config.MailConfig)
+	// if err := mailer.Send(params.Email, "Fatch OTP", fmt.Sprintf("Your OTP is: %d", otp)); err != nil {
+	// 	types.ReturnJSON(w, types.InternalServerErrorResponse())
+	// 	return &types.ErrorDetails{
+	// 		Message: "Unable to send OTP to user's email",
+	// 		Level:   "DEBUG",
+	// 		Trace:   err,
+	// 	}
+	// }
 
 	// return success response
-	return types.ReturnJSON(w, types.CreatedResponse("User created successfully. Please verify your email", nil))
+	// return types.ReturnJSON(w, types.CreatedResponse("User created successfully. Please verify your email", nil))
+	return types.ReturnJSON(w, types.CreatedResponse(
+		"User created successfully. Please verify your email",
+		map[string]any{"otp": otp},
+	))
 }
 
 func (h *Handler) VerifyUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
@@ -292,4 +294,53 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) *types.ErrorDet
 
 	// return success response
 	return types.ReturnJSON(w, types.OKResponse("User logged out successfully", nil))
+}
+
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
+	ctx := r.Context()
+
+	// get & validate json data from request body
+	var params database.DeleteUserParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		types.ReturnJSON(w, types.BadRequestErrorResponse("Invalid JSON data"))
+		return &types.ErrorDetails{
+			Message: "Unable to parse json",
+			Level:   "ERROR",
+			Trace:   err,
+		}
+	}
+
+	// no empty password validation
+	if params.Passwd == "" {
+		return types.ReturnJSON(w, types.BadRequestErrorResponse("Password is required"))
+	}
+
+	userID := ctx.Value("userID").(pgtype.UUID)
+	params.UserID = userID
+
+	// call service to delete user
+	errResponse, err := h.Service.DeleteUser(ctx, params)
+	if err != nil {
+		types.ReturnJSON(w, errResponse)
+		return &types.ErrorDetails{
+			Message: "Unable to delete user",
+			Level:   "DEBUG",
+			Trace:   err,
+		}
+	}
+
+	// invalidate user's cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   false, // match Login setting
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	// return success response
+	return types.ReturnJSON(w, types.OKResponse("User deleted successfully", nil))
 }

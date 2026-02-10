@@ -173,6 +173,29 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION delete_user(p_uuid uuid, p_password TEXT)
+RETURNS VOID
+AS $$
+DECLARE
+    hash_passwd TEXT;
+BEGIN
+    SELECT passwd INTO hash_passwd
+    FROM users
+    WHERE id = p_uuid;
+
+    IF hash_passwd IS NULL THEN
+        RAISE EXCEPTION 'User not found';
+    END IF;
+
+    IF hash_passwd <> crypt(p_password, hash_passwd) THEN
+        RAISE EXCEPTION 'Your password is incorrect';
+    END IF;
+
+    DELETE FROM users CASCADE
+    WHERE id = p_uuid;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Trigger function to hash passwords using bcrypt
 CREATE OR REPLACE FUNCTION hash_user_password()
 RETURNS TRIGGER AS $$

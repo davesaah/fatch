@@ -51,3 +51,11 @@ func (q *Queries) VerifyUser(ctx context.Context, arg VerifyUserParams) error {
 	_, err := q.db.Exec(ctx, verifyUser, arg.Username, arg.Passwd, arg.OTP)
 	return err
 }
+
+const deleteUser = "SELECT delete_user ($1::uuid, $2::text)"
+
+// DeleteUser deletes a user from the database.
+func (q *Queries) DeleteUser(ctx context.Context, arg DeleteUserParams) error {
+	_, err := q.db.Exec(ctx, deleteUser, arg.UserID, arg.Passwd)
+	return err
+}

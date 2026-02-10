@@ -61,7 +61,7 @@ func NewRouter(h *handlers.Handler, ps *pubsub.PubSub) http.Handler {
 			r.Use(middleware.JWTAuthMiddleware(h.Config.JWTSecret))
 			r.Patch("/passwd", middleware.MakeHandler(h.ChangePassword, h, ps))
 			r.Post("/logout", middleware.MakeHandler(h.Logout, h, ps))
-			// r.Post("/delete", middleware.MakeHandler(h.DeleteUser, h, ps))
+			r.Delete("/delete", middleware.MakeHandler(h.DeleteUser, h, ps))
 		})
 	})
 
