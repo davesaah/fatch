@@ -1,5 +1,24 @@
-basePath: /v1
+basePath: /
 definitions:
+  database.ChangePasswordParams:
+    properties:
+      new_passwd:
+        type: string
+      old_passwd:
+        type: string
+    type: object
+  database.DeleteUserParams:
+    properties:
+      passwd:
+        type: string
+    type: object
+  database.LoginParams:
+    properties:
+      passwd:
+        type: string
+      username:
+        type: string
+    type: object
   database.RegisterUserParams:
     properties:
       email:
@@ -7,20 +26,6 @@ definitions:
       passwd:
         type: string
       username:
-        type: string
-    type: object
-  database.VerifyPasswordParams:
-    properties:
-      passwd:
-        type: string
-      username:
-        type: string
-    type: object
-  types.ChangePasswordParams:
-    properties:
-      new_passwd:
-        type: string
-      old_passwd:
         type: string
     type: object
   types.ErrorResponse:
@@ -34,24 +39,30 @@ definitions:
       message:
         type: string
     type: object
-host: api.fatch.laelfamily.org:8000
+host: localhost:8000
 info:
-  contact: {}
+  contact:
+    email: dave@davesaah.com
+    name: David Saah
+    url: https://davesaah.com
   description: Track your money; fetch insights on spending; budget effectively.
+  license:
+    name: GNU General Public License v3.0
+    url: https://choosealicense.com/licenses/gpl-3.0/
   title: Fatch API
   version: "1.0"
 paths:
-  /auth/passwd:
+  /auth/delete:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Request body for changing user password
+      - description: Request body for deleting a user
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/types.ChangePasswordParams'
+          $ref: '#/definitions/database.DeleteUserParams'
       produces:
       - application/json
       responses:
@@ -63,6 +74,102 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Delete user
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request body for user login attempt
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/database.LoginParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: User login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: User logout
+      tags:
+      - auth
+  /auth/passwd:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request body for changing user password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/database.ChangePasswordParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
         "412":
           description: Precondition Failed
           schema:
@@ -74,36 +181,7 @@ paths:
       summary: Change password for a user
       tags:
       - auth
-  /auth/verify:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Request body for verifying user login attempt
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/database.VerifyPasswordParams'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SuccessResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/types.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.ErrorResponse'
-      summary: Verify user login attempt
-      tags:
-      - auth
-  /users:
+  /auth/register:
     post:
       consumes:
       - application/json
@@ -125,6 +203,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
         "409":
           description: Conflict
           schema:
@@ -139,5 +221,5 @@ paths:
             $ref: '#/definitions/types.ErrorResponse'
       summary: Register a new user
       tags:
-      - users
+      - auth
 swagger: "2.0"

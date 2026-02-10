@@ -25,6 +25,14 @@ var (
 // @title Fatch API
 // @version 1.0
 // @description Track your money; fetch insights on spending; budget effectively.
+
+// @contact.name   David Saah
+// @contact.url    https://davesaah.com
+// @contact.email  dave@davesaah.com
+
+// @license.name GNU General Public License v3.0
+// @license.url https://choosealicense.com/licenses/gpl-3.0/
+
 // @host localhost:8000
 // @BasePath /
 func main() {

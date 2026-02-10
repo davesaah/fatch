@@ -9,12 +9,162 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "David Saah",
+            "url": "https://davesaah.com",
+            "email": "dave@davesaah.com"
+        },
+        "license": {
+            "name": "GNU General Public License v3.0",
+            "url": "https://choosealicense.com/licenses/gpl-3.0/"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/delete": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Delete user",
+                "parameters": [
+                    {
+                        "description": "Request body for deleting a user",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.DeleteUserParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Request body for user login attempt",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.LoginParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/passwd": {
             "post": {
                 "consumes": [
@@ -34,7 +184,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.ChangePasswordParams"
+                            "$ref": "#/definitions/database.ChangePasswordParams"
                         }
                     }
                 ],
@@ -49,6 +199,12 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "412": {
@@ -66,7 +222,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/verify": {
+        "/auth/register": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -76,51 +232,6 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "auth"
-                ],
-                "summary": "Verify user login attempt",
-                "parameters": [
-                    {
-                        "description": "Request body for verifying user login attempt",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/database.VerifyPasswordParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SuccessResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/types.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/users": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
                 ],
                 "summary": "Register a new user",
                 "parameters": [
@@ -147,6 +258,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "409": {
                         "description": "Conflict",
                         "schema": {
@@ -170,6 +287,36 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "database.ChangePasswordParams": {
+            "type": "object",
+            "properties": {
+                "new_passwd": {
+                    "type": "string"
+                },
+                "old_passwd": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.DeleteUserParams": {
+            "type": "object",
+            "properties": {
+                "passwd": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.LoginParams": {
+            "type": "object",
+            "properties": {
+                "passwd": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "database.RegisterUserParams": {
             "type": "object",
             "properties": {
@@ -180,28 +327,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "database.VerifyPasswordParams": {
-            "type": "object",
-            "properties": {
-                "passwd": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.ChangePasswordParams": {
-            "type": "object",
-            "properties": {
-                "new_passwd": {
-                    "type": "string"
-                },
-                "old_passwd": {
                     "type": "string"
                 }
             }
@@ -229,8 +354,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "api.fatch.laelfamily.org:8000",
-	BasePath:         "/v1",
+	Host:             "localhost:8000",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Fatch API",
 	Description:      "Track your money; fetch insights on spending; budget effectively.",

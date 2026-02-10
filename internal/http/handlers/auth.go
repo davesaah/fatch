@@ -18,9 +18,10 @@ import (
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body types.ChangePasswordParams true "Request body for changing user password"
+// @Param request body database.ChangePasswordParams true "Request body for changing user password"
 // @Success 200 {object} types.SuccessResponse
 // @Failure 400 {object} types.ErrorResponse
+// @Failure 401 {string} string
 // @Failure 412 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/passwd [post]
@@ -79,13 +80,14 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) *types.
 	return types.ReturnJSON(w, types.OKResponse("Password changed successfully", nil))
 }
 
-// @Summary Verify user login attempt
+// @Summary User login
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body database.LoginParams true "Request body for verifying user login attempt"
+// @Param request body database.LoginParams true "Request body for user login attempt"
 // @Success 200 {object} types.SuccessResponse
 // @Failure 400 {object} types.ErrorResponse
+// @Failure 401 {string} string
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/login [post]
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
@@ -181,9 +183,10 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) *types.ErrorDeta
 // @Tags auth
 // @Accept  json
 // @Produce  json
-// @Param request body database.RegisterParams true "Request body for registering a new user"
+// @Param request body database.RegisterUserParams true "Request body for registering a new user"
 // @Success 201 {object} types.SuccessResponse
 // @Failure 400 {object} types.ErrorResponse
+// @Failure 401 {string} string
 // @Failure 412 {object} types.ErrorResponse
 // @Failure 409 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
@@ -280,6 +283,14 @@ func (h *Handler) VerifyUser(w http.ResponseWriter, r *http.Request) *types.Erro
 	return types.ReturnJSON(w, types.OKResponse("User verified successfully", nil))
 }
 
+// @Summary User logout
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.SuccessResponse
+// @Failure 401 {string} string
+// @Failure 500 {object} types.ErrorResponse
+// @Router /auth/logout [post]
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
@@ -296,6 +307,17 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) *types.ErrorDet
 	return types.ReturnJSON(w, types.OKResponse("User logged out successfully", nil))
 }
 
+// @Summary Delete user
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body database.DeleteUserParams true "Request body for deleting a user"
+// @Success 200 {object} types.SuccessResponse
+// @Failure 400 {object} types.ErrorResponse
+// @Failure 401 {string} string
+// @Failure 409 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
+// @Router /auth/delete [post]
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) *types.ErrorDetails {
 	ctx := r.Context()
 
