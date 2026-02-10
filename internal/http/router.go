@@ -70,8 +70,7 @@ func NewRouter(h *handlers.Handler, ps *pubsub.PubSub) http.Handler {
 		r.Use(middleware.JWTAuthMiddleware(h.Config.JWTSecret))
 
 		r.Route("/currencies", func(r chi.Router) {
-			r.Get("/", middleware.MakeHandler(h.GetAllCurrencies, h, ps))
-			r.Get("/{id}", middleware.MakeHandler(h.GetCurrencyByID, h, ps))
+			r.Get("/", middleware.MakeHandler(h.GetCurrencies, h, ps))
 		})
 
 		r.Route("/accounts", func(r chi.Router) {
