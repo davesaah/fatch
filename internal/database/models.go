@@ -85,3 +85,36 @@ type ArchiveAccountByIDParams struct {
 	GetAccountDetailsParams
 	IsArchive bool `json:"is_archive"`
 }
+
+// CATEGORIES
+
+type CreateCategoryParams struct {
+	UserID       pgtype.UUID `json:"-"`
+	CategoryName string      `json:"category_name"`
+	Type         string      `json:"category_type"`
+}
+
+type GetCategoryByIDParams struct {
+	UserID     pgtype.UUID `json:"-"`
+	CategoryID int         `json:"category_id"`
+}
+
+type GetCategoryByIDRow struct {
+	CategoryName string `json:"category_name"`
+	Type         string `json:"category_type"`
+}
+
+type GetAllCategoriesRow struct {
+	CategoryID int `json:"category_id"`
+	GetCategoryByIDRow
+}
+
+type UpdateCategoryParams struct {
+	CreateCategoryParams
+	CategoryID int `json:"category_id"`
+}
+
+type DeleteCategoryParams struct {
+	UserID     pgtype.UUID `json:"-"`
+	CategoryID int         `json:"category_id"`
+}

@@ -69,9 +69,19 @@ func NewRouter(h *handlers.Handler, ps *pubsub.PubSub) http.Handler {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JWTAuthMiddleware(h.Config.JWTSecret))
 
-		r.Route("/currencies", func(r chi.Router) {
-			r.Get("/", middleware.MakeHandler(h.GetCurrencies, h, ps))
+		r.Get("/currencies", middleware.MakeHandler(h.GetCurrencies, h, ps))
+
+		r.Route("/categories", func(r chi.Router) {
+			r.Post("/", middleware.MakeHandler(h.CreateCategory, h, ps))
+			r.Get("/", middleware.MakeHandler(h.GetCategories, h, ps))
+			r.Delete("/", middleware.MakeHandler(h.DeleteCategory, h, ps))
+			r.Patch("/", middleware.MakeHandler(h.UpdateCategory, h, ps))
 		})
+
+		// r.Route("/subcategories", func(r chi.Router) {
+		// 	r.Post("/", middleware.MakeHandler(h.CreateSubCategory, h, ps))
+		// 	r.Get("/", middleware.MakeHandler(h.GetSubCategories, h, ps))
+		// })
 
 		r.Route("/accounts", func(r chi.Router) {
 			r.Post("/", middleware.MakeHandler(h.CreateAccount, h, ps))

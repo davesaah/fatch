@@ -283,19 +283,10 @@ CREATE TABLE categories (
     id BIGSERIAL PRIMARY KEY,
     user_id uuid DEFAULT NULL REFERENCES users (id) ON DELETE CASCADE,
     type category_type NOT NULL,
-    name VARCHAR(100) NOT NULL UNIQUE
-);
-
-CREATE TABLE subcategories (
-    id BIGSERIAL PRIMARY KEY,
-    category_id BIGINT NOT NULL REFERENCES categories (id) ON DELETE CASCADE,
-    name VARCHAR(150) NOT NULL,
-    UNIQUE (category_id, name) -- ensures name is unique only within its category
+    name VARCHAR(100) NOT NULL
 );
 
 CREATE INDEX idx_categories_user_id ON categories (user_id);
-
-CREATE INDEX idx_subcategories_category_id ON subcategories (category_id);
 
 CREATE OR REPLACE FUNCTION add_category(
     p_type VARCHAR,
@@ -325,6 +316,101 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION get_categories(p_uuid uuid = NULL)
+RETURNS TABLE (
+    category_id BIGINT,
+    category_name VARCHAR,
+    category_type category_type
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT c.id, c.name, c.type
+    FROM categories c
+    WHERE c.user_id = p_uuid OR c.user_id IS NULL
+    ORDER BY c.type, c.name;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_category_by_id(
+    p_user_id UUID = NULL,
+    p_category_id BIGINT = NULL
+)
+RETURNS TABLE (
+    category_name VARCHAR,
+    category_type category_type
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT c.name, c.type
+    FROM categories c
+    WHERE (c.user_id = p_user_id OR c.user_id IS NULL) AND c.id = p_category_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Category not found';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_category(
+    p_category_id BIGINT,
+    p_type VARCHAR,
+    p_name VARCHAR,
+    p_user_id UUID = NULL
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	-- Validate category type
+    BEGIN
+        PERFORM p_type::category_type;  -- Try to cast to ENUM
+    EXCEPTION
+        WHEN others THEN
+            RAISE EXCEPTION 'Category type "%" does not exist', p_type;
+    END;
+
+	BEGIN
+    	UPDATE categories
+		SET type = p_type::category_type, name = p_name
+		WHERE id = p_category_id AND user_id = p_user_id;
+
+	EXCEPTION
+    	WHEN unique_violation THEN
+        	RAISE EXCEPTION 'Category name "%" already exists', p_name;
+	END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION delete_category(
+    p_category_id BIGINT,
+    p_user_id UUID
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	DELETE FROM categories
+	WHERE id = p_category_id AND user_id = p_user_id;
+
+	IF NOT FOUND THEN
+		RAISE EXCEPTION 'Category not found';
+	END IF;
+END;
+$$;
+
+----------------------------------------------------------------
+-- SUBCATEGORIES
+----------------------------------------------------------------
+
+CREATE TABLE subcategories (
+    id BIGSERIAL PRIMARY KEY,
+    category_id BIGINT NOT NULL REFERENCES categories (id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
+    UNIQUE (category_id, name) -- ensures name is unique only within its category
+);
+
+CREATE INDEX idx_subcategories_category_id ON subcategories (category_id);
+
 CREATE OR REPLACE FUNCTION add_subcategory(
     p_category_id BIGINT,
     p_name VARCHAR
@@ -346,20 +432,6 @@ EXCEPTION
         RAISE EXCEPTION 'Subcategory name "%" already exists in this category', p_name;
 END;
 $$;
-
-CREATE OR REPLACE FUNCTION get_categories()
-RETURNS TABLE (
-    category_id BIGINT,
-    category_name VARCHAR,
-    category_type category_type
-) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT c.id, c.name, c.type
-    FROM categories c
-    ORDER BY c.type, c.name;
-END;
-$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_subcategories(
     p_category_id BIGINT
